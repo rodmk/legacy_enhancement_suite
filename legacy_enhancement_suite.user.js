@@ -38,28 +38,37 @@
 
 // =============================================================================
 //                            Primary Entry Point
-//
-// Given a list of page-specific mapping rules, executes the functions
-// corresponding to said page. This allows us to only execute certain
-// functionality on certain pages.
 // =============================================================================
+/**
+ * Registers a function to be executed on pages where the path matches path
+ * rules, where path_rules is an array of regexes. For example,
+ * registerFunction(foo, ['bar.php', 'baz.php']) will register foo to be run
+ * on bar.php and baz.php.
+ */
+var function_registry = {};
+function registerFunction(fn, path_rules) {
+  $.each(path_rules, function(i, rule) {
+    if (rule in function_registry) {
+      function_registry[rule].push(fn);
+    } else {
+      function_registry[rule] = [fn];
+    }
+  });
+}
+
+/**
+ * Executes registered functions based on current path.
+ */
 function executeFunctions() {
   // Load CSS resources
   $('head').append($('<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">'));
 
-  // Global setup
-  addQuickHealLink();
-  addQuickHealKeybinding();
-
   var current_path = window.location.pathname;
-  switch (current_path) {
-    case '/gangs2_4.php':
-      addGangTop10ExportButton();
-      break;
-    case '/market3.php':
-      setUpStand();
-      break;
-  }
+  $.each(function_registry, function(rule, fns) {
+    if (current_path.match(rule)) {
+      $.each(fns, function(i, fn) { fn(); });
+    }
+  });
 }
 $(document).ready(executeFunctions);
 
@@ -70,19 +79,19 @@ $(document).ready(executeFunctions);
  * FEATURE: If there's a quick link to hospital/sanctuary of healing, adds a
  * 'heal' link (actually an ajax call) right next to it.
  */
-function addQuickHealLink() {
+registerFunction(function addQuickHealLink() {
   var hospital_node = $('a[href="hospital.php"]');
   var heal_me_link = $('<a>', { text: ' (Heal)', href: '#' });
   heal_me_link.click(fullHeal);
   hospital_node.after(heal_me_link);
-}
+}, [ ".*" ]);
 
 /**
  * FEATURE: Binds 'h' to full heal.
  */
-function addQuickHealKeybinding() {
+registerFunction(function addQuickHealKeybinding() {
   Mousetrap.bind('h', function() { fullHeal(); return false; });
-}
+}, [ ".*" ]);
 
 /**
  * @return {string} Secret key use for Hospital operations
@@ -115,7 +124,7 @@ function fullHeal() {
 // =============================================================================
 //                                  Market
 // =============================================================================
-function setUpStand() {
+registerFunction(function setUpStand() {
   // FEATURE: When selecting items from your inventory, if you already have that
   // item in your stand, copy over the price/currency for it.
   var item_selector = $('select[name="item"]');
@@ -151,11 +160,11 @@ function setUpStand() {
   $('input[name="multi"]').prop('checked', true);
 
   // FEATURE: Bind 'a' to 'add item' button.
-  var add_btn = $('input[value="Add Item"]');
   Mousetrap.bind('a', _.once(function() {
+    var add_btn = $('input[value="Add Item"]');
     add_btn.click();
   }));
-}
+}, [ "market3.php" ]);
 
 /**
  * Transforms a select tag object to a [value => text] map
@@ -176,7 +185,7 @@ function selectToMap(select) {
  * selecting and copying the text is a total mess), by adding an icon linking
  * to the data in the table.
  */
-function addGangTop10ExportButton() {
+registerFunction(function addGangTop10ExportButton() {
   // Read the scores from the document and parse them
   var table = $("table:contains('Gang List : Last Week's Warfare Points')");
   var players = table
@@ -200,7 +209,7 @@ function addGangTop10ExportButton() {
   link.append($('<i class="fa fa-file-text"></i>'));
   var title = $("font:contains('Gang List : Last Week's Warfare Points')");
   title.after(link);
-}
+}, [ "gangs2_4.php" ]);
 
 // =============================================================================
 //                                 Constants
