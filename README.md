@@ -1,2 +1,5 @@
-legacy_enhancement_suite
+Legacy Enhancement Suite
 ========================
+
+Requires Firefox + Greasemonkey. Chrome (+ Tampermonkey) not currently
+supported.
