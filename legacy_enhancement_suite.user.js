@@ -67,8 +67,8 @@ $(document).ready(executeFunctions);
 //                               General Layout
 // =============================================================================
 /**
- * If there's a quick link to hospital/sanctuary of healing, adds a 'heal'
- * link (actually an ajax call) right next to it.
+ * FEATURE: If there's a quick link to hospital/sanctuary of healing, adds a
+ * 'heal' link (actually an ajax call) right next to it.
  */
 function addQuickHealLink() {
   var hospital_node = $('a[href="hospital.php"]');
@@ -78,7 +78,7 @@ function addQuickHealLink() {
 }
 
 /**
- * Binds 'h' to full heal
+ * FEATURE: Binds 'h' to full heal.
  */
 function addQuickHealKeybinding() {
   Mousetrap.bind('h', function() { fullHeal(); return false; });
@@ -116,8 +116,8 @@ function fullHeal() {
 //                                  Market
 // =============================================================================
 function setUpStand() {
-  // When selecting items from your inventory, if you already have that item in
-  // your stand, copy over the price/currency for it.
+  // FEATURE: When selecting items from your inventory, if you already have that
+  // item in your stand, copy over the price/currency for it.
   var item_selector = $('select[name="item"]');
   item_selector.change(function () {
     var selected_item = $.trim($(this).find("option:selected").text());
@@ -138,7 +138,7 @@ function setUpStand() {
     $('input[select="currency"]').val(currency === 'c' ? 1 : 2);
   });
 
-  // Automatically select the first non-null item.
+  // FEATURE: Automatically select by default the first non-null item.
   var map = selectToMap(item_selector);
   $.each(map, function(key, value){
     if ($.trim(value) !== "None") {
@@ -147,14 +147,14 @@ function setUpStand() {
     }
   });
 
-  // Bind 'a' to 'add item' button
+  // FEATURE: Auto-check add all items with the same price by default.
+  $('input[name="multi"]').prop('checked', true);
+
+  // FEATURE: Bind 'a' to 'add item' button.
   var add_btn = $('input[value="Add Item"]');
   Mousetrap.bind('a', _.once(function() {
     add_btn.click();
   }));
-
-  // Auto-check add all items with the same price by default
-  $('input[name="multi"]').prop('checked', true);
 }
 
 /**
@@ -172,8 +172,9 @@ function selectToMap(select) {
 //                                  Gangs
 // =============================================================================
 /**
- * Adds simple functionality to copy over the top 10 list (since just
- * selecting and copying the text is a total mess)
+ * FEATURE: Adds simple functionality to copy over the top 10 list (since just
+ * selecting and copying the text is a total mess), by adding an icon linking
+ * to the data in the table.
  */
 function addGangTop10ExportButton() {
   // Read the scores from the document and parse them
