@@ -100,7 +100,7 @@ function getHospitalKey() {
   return cachedFetch("hospital:key", SEC_IN_HOUR, function() {
     var hospital_key;
     $.ajax({
-      url: "http://www.legacy-game.net/hospital.php",
+      url: "/hospital.php",
       async: false,
       success: function(data) {
         // Fetch the key from any uri containing the key param in the page
@@ -116,7 +116,7 @@ function getHospitalKey() {
  * Heals the player fully via hospital/sanctuary
  */
 function fullHeal() {
-  var uri = URI("http://www.legacy-game.net/hospital.php")
+  var uri = URI("/hospital.php")
     .query({ m: 1, key: getHospitalKey() });
   $.get(uri.href());
 }
@@ -238,6 +238,14 @@ function cachedFetch(cache_key, cache_timeout, fetch_fn) {
  * be used for all cache keys.
  */
 function sessionKey(key) {
-  var legacy_hash = document.cookie.match(/legacy_hash=(\w+);/)[1];
+  var legacy_hash;
+  switch (URI(window.location.href).subdomain()) {
+    case 'www':
+      legacy_hash = document.cookie.match(/legacy_hash=(\w+);/)[1];
+      break;
+    case 'dev':
+      legacy_hash = document.cookie.match(/legacy_hash_dev=(\w+);/)[1];
+      break;
+  }
   return key + ":" + legacy_hash;
 }
