@@ -27,8 +27,6 @@
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
 // @version     0.0.1
-// @run-at      document-start
-// @grant       none
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://locachejs.org/build/locache.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.js
@@ -187,7 +185,7 @@ function selectToMap(select) {
  */
 registerFunction(function addGangTop10ExportButton() {
   // Read the scores from the document and parse them
-  var table = $("table:contains('Gang List : Last Week's Warfare Points')");
+  var table = $('table:contains("Gang List : Last Week\'s Warfare Points")');
   var players = table
     .find('a[href*="profile.php"]')
     .map(function (k, v) { return $(v).text(); });
@@ -207,7 +205,7 @@ registerFunction(function addGangTop10ExportButton() {
   var link = $("<a style='position: relative; right: 5px; float: right;''>");
   link.attr('href', data);
   link.append($('<i class="fa fa-file-text"></i>'));
-  var title = $("font:contains('Gang List : Last Week's Warfare Points')");
+  var title = $('font:contains("Gang List : Last Week\'s Warfare Points")');
   title.after(link);
 }, [ "gangs2_4.php" ]);
 
