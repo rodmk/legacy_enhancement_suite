@@ -216,6 +216,56 @@ registerFunction(function addGangTop10ExportButton() {
 }, [ "gangs2_4.php" ]);
 
 // =============================================================================
+//                               Platinum Store
+// =============================================================================
+//
+/**
+ * Feature: Formats remaining boost time to a saner format
+ */
+registerFunction(function formatReimainingBoostTime() {
+  function formatTime(hours) {
+    hours = parseInt(hours, 10);
+    var out = [];
+    switch (true) {
+      case (hours >= 8736):
+        var years = Math.floor(hours / (8736));
+        out.push(years + " year" + (years > 1 ? "s" : ""));
+        hours = hours % (8736);
+        /* falls through */
+      case (hours >= 168):
+        var weeks = Math.floor(hours / (168));
+        out.push(weeks + " week" + (weeks > 1 ? "s" : ""));
+        hours = hours % (168);
+        /* falls through */
+      case (hours >= 24):
+        var days = Math.floor(hours / (24));
+        out.push(days + " day" + (days > 1 ? "s" : ""));
+        hours = hours % 24;
+        /* falls through */
+      case (hours > 0):
+        out.push(hours + " hour" + (hours > 1 ? "s" : ""));
+        /* falls through */
+      default:
+        console.log(out);
+        var str = out.join(", ");
+        return str;
+    }
+  }
+
+  $('img[alt*=Boost][onmouseover]').each(function() {
+    var regex = /\d{1,} hour\(s\)/;
+    var time = $(this).attr('onmouseover').match(regex);
+    if (time) {
+      $(this).attr(
+        'onmouseover',
+        $(this).attr('onmouseover').replace(regex, formatTime(time))
+      );
+    }
+  });
+}, [ "platinum_store.php" ]);
+
+
+// =============================================================================
 //                                 Constants
 // =============================================================================
 var SEC_IN_HOUR = 60 * 60; // 1 hour
