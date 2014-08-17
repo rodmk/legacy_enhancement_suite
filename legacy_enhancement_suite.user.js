@@ -129,20 +129,20 @@ function fullHeal() {
  * FEATURE: Adds tooltip hovercards to player items.
  */
 registerFunction(function addItemHovercards() {
-  $('a[href*="javascript:modelesswin"]').each(function(){
+  $('a[href*="javascript:modelesswin"]').each(function() {
     var equipData;
     $(this)
-      .mouseover(function(){
-        if(!equipData){
+      .mouseover(function() {
+        if (!equipData) {
           $.ajax({
-            url:$(this).attr('href').match(/'(.*)'/).pop(),
-            async:false,
-            success:function(data){
-              equipData = $('center',data).html();
+            url: $(this).attr('href').match(/'(.*)'/).pop(),
+            async: false,
+            success: function(data) {
+              equipData = $('center', data).html();
             }
           });
         }
-        ddrivetip(equipData,450);
+        ddrivetip(equipData, 450);
       })
       .mouseout(hideddrivetip);
   });
