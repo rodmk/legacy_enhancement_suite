@@ -216,11 +216,33 @@ registerFunction(function addGangTop10ExportButton() {
 }, [ "gangs2_4.php" ]);
 
 // =============================================================================
+//                               Wasteland
+// =============================================================================
+/**
+ * Feature: Adds mouse tooltip showing coordinates to wl map.
+ */
+registerFunction(function wlMapCoOrds() {
+  var tooltip_width = 35;
+  var coords = $('<div><div style="text-align:center;">1,1</div></div>');
+  $('#overlay2')
+    .mouseover(function(){ ddrivetip(coords.html(), tooltip_width); })
+    .mousemove(function(e) {
+      // Firefox doesn't implement offsetX/Y, so compute it ourselves if needed.
+      var offX  = (e.offsetX || e.clientX - $(e.target).offset().left + window.pageXOffset);
+      var offY  = (e.offsetY || e.clientY - $(e.target).offset().top  + window.pageYOffset);
+      var x = Math.ceil(offX / 33);
+      var y = Math.ceil(offY / 33);
+      coords.children().text(x + ',' + y);
+      ddrivetip(coords.html(), tooltip_width);
+    })
+    .mouseout(hideddrivetip);
+}, [ 'map.php' ]);
+
+// =============================================================================
 //                               Platinum Store
 // =============================================================================
-//
 /**
- * Feature: Formats remaining boost time to a saner format
+ * Feature: Formats remaining boost time to a saner format.
  */
 registerFunction(function formatReimainingBoostTime() {
   function formatTime(hours) {
@@ -263,7 +285,6 @@ registerFunction(function formatReimainingBoostTime() {
     }
   });
 }, [ "platinum_store.php" ]);
-
 
 // =============================================================================
 //                                 Constants
