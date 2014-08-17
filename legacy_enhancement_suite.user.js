@@ -294,7 +294,6 @@ registerFunction(function addGangTop10ExportButton() {
  * FEATURE: Adds mouse tooltip showing coordinates to wl map.
  */
 registerFunction(function wlMapCoOrds() {
-  var tooltip_width = 35;
   var coords = $('<div><div style="text-align:center;">1,1</div></div>');
   $('#overlay2')
     .mousemove(function(e) {
@@ -304,7 +303,7 @@ registerFunction(function wlMapCoOrds() {
       var x = Math.ceil(offX / 33);
       var y = Math.ceil(offY / 33);
       coords.children().text(x + ',' + y);
-      ddrivetip(coords.html(), tooltip_width);
+      ddrivetip(coords.html(), 35);
     })
     .mouseout(hideddrivetip);
 }, [ 'map.php' ]);
