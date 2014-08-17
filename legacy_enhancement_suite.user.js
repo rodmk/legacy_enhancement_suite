@@ -126,6 +126,21 @@ function fullHeal() {
 }
 
 // =============================================================================
+//                                Messages
+// =============================================================================
+/**
+ * FEATURE: Adds confirmation dialog when deleting messages.
+ */
+registerFunction(function addDeleteMessageConfirm() {
+  $('a[href*="messages4.php"]').each(function() {
+    $(this).click(function() {
+      return confirm("Delete Mail?");
+    });
+  });
+}, [ "messages.php" ]);
+
+
+// =============================================================================
 //                                  Market
 // =============================================================================
 registerFunction(function setUpStand() {
@@ -219,7 +234,7 @@ registerFunction(function addGangTop10ExportButton() {
 //                               Wasteland
 // =============================================================================
 /**
- * Feature: Adds mouse tooltip showing coordinates to wl map.
+ * FEATURE: Adds mouse tooltip showing coordinates to wl map.
  */
 registerFunction(function wlMapCoOrds() {
   var tooltip_width = 35;
@@ -242,7 +257,7 @@ registerFunction(function wlMapCoOrds() {
 //                               Platinum Store
 // =============================================================================
 /**
- * Feature: Formats remaining boost time to a saner format.
+ * FEATURE: Formats remaining boost time to a saner format.
  */
 registerFunction(function formatReimainingBoostTime() {
   function formatTime(hours) {
