@@ -125,6 +125,44 @@ function fullHeal() {
   $.get(uri.href());
 }
 
+/**
+ * FEATURE: Adds tooltip hovercards to player items.
+ */
+registerFunction(function addItemHovercards() {
+  $('a[href*="javascript:modelesswin"]').each(function(){
+    var equipData;
+    $(this)
+      .mouseover(function(){
+        if(!equipData){
+          $.ajax({
+            url:$(this).attr('href').match(/'(.*)'/).pop(),
+            async:false,
+            success:function(data){
+              equipData = $('center',data).html();
+            }
+          });
+        }
+        ddrivetip(equipData,450);
+      })
+      .mouseout(hideddrivetip);
+  });
+}, [ "profile.php", "market2.php", "market3.php", "market6.php" ]);
+
+// =============================================================================
+//                                Profiles
+// =============================================================================
+/**
+ * Various profile page tweaks.
+ */
+registerFunction(function setUpProfile() {
+  // FEATURE: Format exp counts to include commas.
+  $('img[title*="Exp :"]').each(function(){
+    $(this)
+      .attr('title',$(this).attr('title').replace(/\B(?=(\d{3})+(?!\d))/g, ","))
+      .attr('alt',$(this).attr('title'));
+  });
+}, [ "profile.php" ]);
+
 // =============================================================================
 //                                Messages
 // =============================================================================
@@ -197,6 +235,25 @@ function selectToMap(select) {
 }
 
 // =============================================================================
+//                                Abilities
+// =============================================================================
+/**
+ * FEATURE: Removes completed abilities from the training selection options.
+ */
+registerFunction(function trimAbilityList() {
+  $('option').each(function() {
+    // Check trained level out of total. If they're equal, remove the option.
+    var match = $(this).text().match(/\d/g);
+    if (match && match.length === 2) {
+      if (match[0] === match[1]) {
+        $(this).remove();
+      }
+    }
+  });
+}, [ "information2.php" ]);
+
+
+// =============================================================================
 //                                  Gangs
 // =============================================================================
 /**
@@ -240,7 +297,6 @@ registerFunction(function wlMapCoOrds() {
   var tooltip_width = 35;
   var coords = $('<div><div style="text-align:center;">1,1</div></div>');
   $('#overlay2')
-    .mouseover(function(){ ddrivetip(coords.html(), tooltip_width); })
     .mousemove(function(e) {
       // Firefox doesn't implement offsetX/Y, so compute it ourselves if needed.
       var offX  = (e.offsetX || e.clientX - $(e.target).offset().left + window.pageXOffset);
@@ -259,7 +315,7 @@ registerFunction(function wlMapCoOrds() {
 /**
  * FEATURE: Formats remaining boost time to a saner format.
  */
-registerFunction(function formatReimainingBoostTime() {
+registerFunction(function formatRemainingBoostTime() {
   function formatTime(hours) {
     hours = parseInt(hours, 10);
     var out = [];
