@@ -64,9 +64,6 @@ function registerFunction(fn, path_rules) {
  * Executes registered functions based on current path.
  */
 function executeFunctions() {
-  // Load CSS resources
-  $('head').append($('<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">'));
-
   var current_path = window.location.pathname;
   $.each(function_registry, function(rule, fns) {
     if (current_path.match(rule)) {
@@ -147,6 +144,74 @@ registerFunction(function addItemHovercards() {
       .mouseout(hideddrivetip);
   });
 }, [ "profile.php", "market2.php", "market3.php", "market6.php" ]);
+
+/**
+ * FEATURE: Adds an exclamation icon next to the fighting tab if the special
+ * NPC hunt timer is up.
+ */
+registerFunction(function addSpecialHuntNotification() {
+  var next_hunt_time = getNextSpecialHuntTime();
+  if (Date.now() >= next_hunt_time) {
+    var fighting_tab = $('img[alt="Fighting"]');
+    var exclamation;
+    exclamation = fontAwesomeIcon('fa-exclamation-circle').css({
+      'float': 'left',
+      'left': '8px',
+      'position': 'relative',
+      'top': '5px',
+    });
+    fighting_tab.after(exclamation);
+
+    var hunting_link = $('#menu-hunting');
+    exclamation = fontAwesomeIcon('fa-exclamation-circle').css({
+      'float': 'right',
+      'position': 'relative',
+      'right': '3px',
+    });
+    hunting_link.append(exclamation);
+  }
+}, [ ".*" ]);
+
+/**
+ * Fetches the earliest time (unixtime, in ms) one can hunt a special NPC.
+ * Note that this is only going to be accurate to about the smallest time unit
+ * present on the hunting page.
+ */
+function getNextSpecialHuntTime() {
+  return cachedFetch("hunting:specialhunttime", 6 * SEC_IN_HOUR, function() {
+    var next_hunt_time;
+    $.ajax({
+      url: "/hunting.php",
+      async: false,
+      success: function(data) {
+        // Check to see if player is capable of hunting special characters in
+        // the first place. If not, return a time far in the future.
+        if (!$('font:contains("Special Character Hunting")', data).length) {
+          next_hunt_time = Number.MAX_VALUE;
+          return;
+        }
+
+        var next_hunt_str = $('font:contains("can hunt again")', data).text();
+        var days = next_hunt_str.match(/(\d+) day/);
+        if (days) { days = parseInt(days[1]); }
+        var hours = next_hunt_str.match(/(\d+) hour/);
+        if (hours) { hours = parseInt(hours[1]); }
+        var minutes = next_hunt_str.match(/(\d+) minute/);
+        if (minutes) { minutes = parseInt(minutes[1]); }
+        var seconds = next_hunt_str.match(/(\d+) second/);
+        if (seconds) { seconds = parseInt(seconds[1]); }
+
+        sec_until_hunt =
+          (days * SEC_IN_DAY) +
+          (hours * SEC_IN_HOUR) +
+          (minutes * SEC_IN_MINUTE) +
+          seconds;
+        next_hunt_time = sec_until_hunt * MS_IN_SEC + Date.now();
+      },
+    });
+    return next_hunt_time;
+  });
+}
 
 // =============================================================================
 //                                Profiles
@@ -282,7 +347,7 @@ registerFunction(function addGangTop10ExportButton() {
   // Add icon-link to document with exported text
   var link = $("<a style='position: relative; right: 5px; float: right;''>");
   link.attr('href', data);
-  link.append($('<i class="fa fa-file-text"></i>'));
+  link.append(fontAwesomeIcon('fa-file-text'));
   var title = $('font:contains("Gang List : Last Week\'s Warfare Points")');
   title.after(link);
 }, [ "gangs2_4.php" ]);
@@ -338,7 +403,6 @@ registerFunction(function formatRemainingBoostTime() {
         out.push(hours + " hour" + (hours > 1 ? "s" : ""));
         /* falls through */
       default:
-        console.log(out);
         var str = out.join(", ");
         return str;
     }
@@ -359,7 +423,10 @@ registerFunction(function formatRemainingBoostTime() {
 // =============================================================================
 //                                 Constants
 // =============================================================================
-var SEC_IN_HOUR = 60 * 60; // 1 hour
+var MS_IN_SEC = 1000;
+var SEC_IN_MINUTE = 60;
+var SEC_IN_HOUR = 60 * SEC_IN_MINUTE;
+var SEC_IN_DAY = 24 * SEC_IN_HOUR;
 
 // =============================================================================
 //                                 Utilities
@@ -386,11 +453,24 @@ function sessionKey(key) {
   var legacy_hash;
   switch (URI(window.location.href).subdomain()) {
     case 'www':
-      legacy_hash = document.cookie.match(/legacy_hash=(\w+);/)[1];
+      legacy_hash = document.cookie.match(/legacy_hash=(\w+)/)[1];
       break;
     case 'dev':
-      legacy_hash = document.cookie.match(/legacy_hash_dev=(\w+);/)[1];
+      legacy_hash = document.cookie.match(/legacy_hash_dev=(\w+)/)[1];
       break;
   }
   return key + ":" + legacy_hash;
+}
+
+/**
+ * Returns a font awesome icon. Loads required CSS to page if necessary.
+ */
+function fontAwesomeIcon(klass) {
+  // Load CSS stylesheet if not loaded yet.
+  if (!$('link[href*="font-awesome.min.css"]').length) {
+    $('head').append(
+      $('<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">')
+    );
+  }
+  return $('<i class="fa ' + klass + '"></i>');
 }
