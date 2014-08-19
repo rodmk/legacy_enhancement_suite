@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.4
+// @version     0.0.5
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://locachejs.org/build/locache.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.js
@@ -335,16 +335,44 @@ registerFunction(function trimAbilityList() {
 
 
 // =============================================================================
-//                                  Gangs
+//                               Top 10 Lists
 // =============================================================================
 /**
- * FEATURE: Adds simple functionality to copy over the top 10 list (since just
- * selecting and copying the text is a total mess), by adding an icon linking
- * to the data in the table.
+ * FEATURE: Adds links to easily-copyable weekly top 10 data.
  */
-registerFunction(function addGangTop10ExportButton() {
+registerFunction(function addOverallTop10ExportButtons() {
+  addTop10ExportButton("Highest Levels");
+  addTop10ExportButton("Highest Wins");
+  addTop10ExportButton("Highest Losses");
+  addTop10ExportButton("Achievements Score");
+}, [ "highrecords.php" ]);
+
+/**
+ * FEATURE: Adds links to easily-copyable weekly top 10 data.
+ */
+registerFunction(function addWeeklyTop10ExportButtons() {
+  addTop10ExportButton("Most Exp Earned");
+  addTop10ExportButton("Most Wins");
+  addTop10ExportButton("Most Losses");
+  addTop10ExportButton("Most Hunting Points");
+  addTop10ExportButton("Most Warfare Points");
+  addTop10ExportButton("Most Tokens Earned");
+}, [ "weekrecords.php" ]);
+
+/**
+ * FEATURE: Adds links to easily-copyable gang top 10 data.
+ */
+registerFunction(function addGangTop10ExportButtons() {
+  addTop10ExportButton("Gang List : Highest Levels");
+  addTop10ExportButton("Gang List : Last Week\'s Warfare Points");
+}, [ "gangs2_4.php" ]);
+
+/**
+ * Given a table title, adds a button/link to copyable top 10 data.
+ */
+function addTop10ExportButton(table_title) {
   // Read the scores from the document and parse them
-  var table = $('table:contains("Gang List : Last Week\'s Warfare Points")');
+  var table = $('table:contains("' + table_title + '")');
   var players = table
     .find('a[href*="profile.php"]')
     .map(function (k, v) { return $(v).text(); });
@@ -364,9 +392,10 @@ registerFunction(function addGangTop10ExportButton() {
   var link = $("<a style='position: relative; right: 5px; float: right;''>");
   link.attr('href', data);
   link.append(fontAwesomeIcon('fa-file-text'));
-  var title = $('font:contains("Gang List : Last Week\'s Warfare Points")');
+  var title = $('font:contains("' + table_title + '")');
   title.after(link);
-}, [ "gangs2_4.php" ]);
+}
+
 
 // =============================================================================
 //                               Wasteland
