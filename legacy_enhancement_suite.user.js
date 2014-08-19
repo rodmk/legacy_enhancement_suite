@@ -39,6 +39,8 @@
 // =============================================================================
 // Avoid conflicting with page's jQuery
 this.$ = this.jQuery = jQuery.noConflict(true);
+// Clear out expired cache values
+locache.cleanup();
 
 // =============================================================================
 //                            Primary Entry Point
