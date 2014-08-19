@@ -85,7 +85,7 @@ $(document).ready(executeFunctions);
 registerFunction(function addQuickHealLink() {
   var hospital_node = $('a[href="hospital.php"]');
   var heal_me_link = $('<a>', { text: ' (Heal)', href: '#' });
-  heal_me_link.click(fullHeal);
+  heal_me_link.click(function() { fullHeal(); return false; });
   hospital_node.after(heal_me_link);
 }, [ ".*" ]);
 
@@ -93,7 +93,7 @@ registerFunction(function addQuickHealLink() {
  * FEATURE: Binds 'h' to full heal.
  */
 registerFunction(function addQuickHealKeybinding() {
-  Mousetrap.bind('h', function() { fullHeal(); return false; });
+  Mousetrap.bind('h', fullHeal);
 }, [ ".*" ]);
 
 /**
