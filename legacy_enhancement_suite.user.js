@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.5
+// @version     0.0.6
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://locachejs.org/build/locache.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.js
@@ -206,25 +206,12 @@ function getNextSpecialHuntTime() {
     return next_hunt_time;
   }
 
-  var cache_key = "hunting:specialhunttime";
-  var cache_timeout = 6 * SEC_IN_HOUR;
-  var next_hunt_time;
-
-  if (window.location.pathname === "/hunting.php") {
-    // If we're already on the hunt page, refresh the cache.
-    next_hunt_time = computeNextSpecialHuntTime(document);
-    cacheSet(cache_key, next_hunt_time, cache_timeout);
-  } else {
-    next_hunt_time = cachedFetch(cache_key, cache_timeout, function() {
-      var ret;
-      $.ajax({
-        url: "/hunting.php",
-        async: false,
-        success: function(data) { ret = computeNextSpecialHuntTime(data); },
-      });
-      return ret;
-    });
-  }
+  var next_hunt_time = cachedFetchWithRefresh(
+    "hunting:specialhunttime",
+    6 * SEC_IN_HOUR,
+    "/hunting.php",
+    computeNextSpecialHuntTime
+  );
 
   return next_hunt_time;
 }
@@ -466,6 +453,44 @@ registerFunction(function formatRemainingBoostTime() {
 }, [ "platinum_store.php" ]);
 
 // =============================================================================
+//                                 Vote Page
+// =============================================================================
+/**
+ * FEATURE: Adds an exclamation icon next to the community tab if the top list
+ * vote timers are up.
+ */
+registerFunction(function addVoteNotification() {
+  function getCanVote() {
+    return cachedFetchWithRefresh(
+      "voting:canvote",
+      6 * SEC_IN_HOUR,
+      "/voting.php",
+      function(data) { return $('b:contains("Not Voted")', data).length > 0; }
+    );
+  }
+
+  if (getCanVote()) {
+    var community_tab = $('img[alt="Community"]');
+    var exclamation;
+    exclamation = fontAwesomeIcon('fa-exclamation-circle').css({
+      'float': 'left',
+      'left': '5px',
+      'position': 'relative',
+      'top': '5px',
+    });
+    community_tab.after(exclamation);
+
+    var vote_link = $(':contains("Vote for Legacy"):last');
+    exclamation = fontAwesomeIcon('fa-exclamation-circle').css({
+      'float': 'right',
+      'position': 'relative',
+      'right': '3px',
+    });
+    vote_link.append(exclamation);
+  }
+}, [ '.*' ]);
+
+// =============================================================================
 //                                 Constants
 // =============================================================================
 var MS_IN_SEC = 1000;
@@ -482,7 +507,7 @@ var SEC_IN_DAY = 24 * SEC_IN_HOUR;
  */
 function cachedFetch(key, timeout, fetch_fn) {
   var value = cacheGet(key);
-  if (!value) {
+  if (value === null) {
     value = fetch_fn();
     cacheSet(key, value, timeout);
   }
@@ -495,6 +520,30 @@ function cacheSet(key, value, timeout) {
 
 function cacheGet(key) {
   return locache.get(sessionKey(key));
+}
+
+/**
+ * Fetching/caching function. Fetches key from cache if available, otherwise
+ * does an ajax get to url and applies fn to compute return value. If already
+ * at url, applies fn, and stores result in cache.
+ */
+function cachedFetchWithRefresh(key, timeout, path, fn) {
+  var value;
+  if (window.location.pathname === path) {
+    value = fn(document);
+    cacheSet(key, value, timeout);
+  } else {
+    value = cachedFetch(key, timeout, function() {
+      var ret;
+      $.ajax({
+        url: path,
+        async: false,
+        success: function(data) { ret = fn(data); },
+      });
+      return ret;
+    });
+  }
+  return value;
 }
 
 /**
