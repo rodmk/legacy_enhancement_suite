@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.3
+// @version     0.0.4
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://locachejs.org/build/locache.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.js
@@ -162,7 +162,7 @@ registerFunction(function addSpecialHuntNotification() {
     });
     fighting_tab.after(exclamation);
 
-    var hunting_link = $('#menu-hunting');
+    var hunting_link = $(':contains("NPC Hunting"):last');
     exclamation = fontAwesomeIcon('fa-exclamation-circle').css({
       'float': 'right',
       'position': 'relative',
@@ -178,39 +178,53 @@ registerFunction(function addSpecialHuntNotification() {
  * present on the hunting page.
  */
 function getNextSpecialHuntTime() {
-  return cachedFetch("hunting:specialhunttime", 6 * SEC_IN_HOUR, function() {
-    var next_hunt_time;
-    $.ajax({
-      url: "/hunting.php",
-      async: false,
-      success: function(data) {
-        // Check to see if player is capable of hunting special characters in
-        // the first place. If not, return a time far in the future.
-        if (!$('font:contains("Special Character Hunting")', data).length) {
-          next_hunt_time = Number.MAX_VALUE;
-          return;
-        }
+  function computeNextSpecialHuntTime(data) {
+    // Check to see if player is capable of hunting special characters in
+    // the first place. If not, return a time far in the future.
+    if (!$('font:contains("Special Character Hunting")', data).length) {
+      return Number.MAX_VALUE;
+    }
 
-        var next_hunt_str = $('font:contains("can hunt again")', data).text();
-        var days = next_hunt_str.match(/(\d+) day/);
-        if (days) { days = parseInt(days[1]); }
-        var hours = next_hunt_str.match(/(\d+) hour/);
-        if (hours) { hours = parseInt(hours[1]); }
-        var minutes = next_hunt_str.match(/(\d+) minute/);
-        if (minutes) { minutes = parseInt(minutes[1]); }
-        var seconds = next_hunt_str.match(/(\d+) second/);
-        if (seconds) { seconds = parseInt(seconds[1]); }
+    var next_hunt_str = $('font:contains("can hunt again")', data).text();
+    var days = next_hunt_str.match(/(\d+) day/);
+    if (days) { days = parseInt(days[1]); }
+    var hours = next_hunt_str.match(/(\d+) hour/);
+    if (hours) { hours = parseInt(hours[1]); }
+    var minutes = next_hunt_str.match(/(\d+) minute/);
+    if (minutes) { minutes = parseInt(minutes[1]); }
+    var seconds = next_hunt_str.match(/(\d+) second/);
+    if (seconds) { seconds = parseInt(seconds[1]); }
 
-        sec_until_hunt =
-          (days * SEC_IN_DAY) +
-          (hours * SEC_IN_HOUR) +
-          (minutes * SEC_IN_MINUTE) +
-          seconds;
-        next_hunt_time = sec_until_hunt * MS_IN_SEC + Date.now();
-      },
-    });
+    var sec_until_hunt =
+      (days * SEC_IN_DAY) +
+      (hours * SEC_IN_HOUR) +
+      (minutes * SEC_IN_MINUTE) +
+      seconds;
+    var next_hunt_time = sec_until_hunt * MS_IN_SEC + Date.now();
     return next_hunt_time;
-  });
+  }
+
+  var cache_key = "hunting:specialhunttime";
+  var cache_timeout = 6 * SEC_IN_HOUR;
+  var next_hunt_time;
+
+  if (window.location.pathname === "/hunting.php") {
+    // If we're already on the hunt page, refresh the cache.
+    next_hunt_time = computeNextSpecialHuntTime(document);
+    cacheSet(cache_key, next_hunt_time, cache_timeout);
+  } else {
+    next_hunt_time = cachedFetch(cache_key, cache_timeout, function() {
+      var ret;
+      $.ajax({
+        url: "/hunting.php",
+        async: false,
+        success: function(data) { ret = computeNextSpecialHuntTime(data); },
+      });
+      return ret;
+    });
+  }
+
+  return next_hunt_time;
 }
 
 // =============================================================================
@@ -435,14 +449,21 @@ var SEC_IN_DAY = 24 * SEC_IN_HOUR;
  * Adds caching to a function. Fetches from cache if value is there, otherwise
  * generates, stores in cache, and returns results of fetch_fn.
  */
-function cachedFetch(cache_key, cache_timeout, fetch_fn) {
-  var session_key = sessionKey(cache_key);
-  var value = locache.get(session_key);
+function cachedFetch(key, timeout, fetch_fn) {
+  var value = cacheGet(key);
   if (!value) {
     value = fetch_fn();
-    locache.set(session_key, value, cache_timeout);
+    cacheSet(key, value, timeout);
   }
   return value;
+}
+
+function cacheSet(key, value, timeout) {
+  locache.set(sessionKey(key), value, timeout);
+}
+
+function cacheGet(key) {
+  return locache.get(sessionKey(key));
 }
 
 /**
