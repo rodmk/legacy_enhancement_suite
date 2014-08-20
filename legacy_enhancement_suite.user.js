@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.7
+// @version     0.0.8
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://locachejs.org/build/locache.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.js
@@ -473,10 +473,19 @@ registerFunction(function formatRemainingBoostTime() {
  * vote timers are up.
  */
 registerFunction(function addVoteNotification() {
+  // Server time is EST (UTC -5). Vote timer resets at 0500 and 1700 UTC.
+  // Thus, we set our cache timer to expire at around server reset.
+  var date = new Date();
+  var hrs_until_reset = 12 - mod(date.getUTCHours() + SERVER_UTC_OFFSET_HRS, 12);
+  var sec_until_reset =
+    (hrs_until_reset * SEC_IN_HOUR) -
+    (date.getUTCMinutes() * SEC_IN_MINUTE) -
+    (date.getUTCSeconds());
+
   function getCanVote() {
     return cachedFetchWithRefresh(
       "voting:canvote",
-      6 * SEC_IN_HOUR,
+      sec_until_reset,
       "/voting.php",
       function(data) { return $('b:contains("Not Voted")', data).length > 0; }
     );
@@ -510,6 +519,9 @@ var MS_IN_SEC = 1000;
 var SEC_IN_MINUTE = 60;
 var SEC_IN_HOUR = 60 * SEC_IN_MINUTE;
 var SEC_IN_DAY = 24 * SEC_IN_HOUR;
+
+// Legacy server runs on EST (UTC-5)
+var SERVER_UTC_OFFSET_HRS = -5;
 
 // =============================================================================
 //                                 Utilities
@@ -588,3 +600,9 @@ function fontAwesomeIcon(klass) {
   }
   return $('<i class="fa ' + klass + '"></i>');
 }
+
+function mod(n, m) {
+  return ((n % m) + m) % m;
+}
+
+// ====================================== END ==================================
