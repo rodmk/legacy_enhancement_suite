@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.6
+// @version     0.0.7
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://locachejs.org/build/locache.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.js
@@ -241,6 +241,19 @@ registerFunction(function addDeleteMessageConfirm() {
   $('a[href*="messages4.php"]').each(function() {
     $(this).click(function() {
       return confirm("Delete Mail?");
+    });
+  });
+
+  // For the checkbox delete link, override the onclick event handler with the
+  // confirm dialog.
+  $('a[onclick*="submitchecks(\'delete\');"]').each(function() {
+    var clickhandler = $(this)[0].onclick;
+    $(this).attr("onclick", "return false;");
+
+    $(this).click(function() {
+      if (confirm("Delete Mail?")) {
+        return clickhandler();
+      }
     });
   });
 }, [ "messages.php" ]);
