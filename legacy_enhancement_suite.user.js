@@ -473,16 +473,15 @@ registerFunction(function formatRemainingBoostTime() {
  * vote timers are up.
  */
 registerFunction(function addVoteNotification() {
-  // Server time is EST (UTC -5). Vote timer resets at 0500 and 1700 UTC.
-  // Thus, we set our cache timer to expire at around server reset.
-  var date = new Date();
-  var hrs_until_reset = 12 - mod(date.getUTCHours() + SERVER_UTC_OFFSET_HRS, 12);
-  var sec_until_reset =
-    (hrs_until_reset * SEC_IN_HOUR) -
-    (date.getUTCMinutes() * SEC_IN_MINUTE) -
-    (date.getUTCSeconds());
-
   function getCanVote() {
+    // Server time is EST (UTC -5). Vote timer resets at 0500 and 1700 UTC.
+    // Thus, we set our cache timer to expire at around server reset.
+    var date = new Date();
+    var hrs_until_reset = 12 - mod(date.getUTCHours() + SERVER_UTC_OFFSET_HRS, 12);
+    var sec_until_reset =
+      (hrs_until_reset * SEC_IN_HOUR) -
+      (date.getUTCMinutes() * SEC_IN_MINUTE) -
+      (date.getUTCSeconds());
     return cachedFetchWithRefresh(
       "voting:canvote",
       sec_until_reset,
