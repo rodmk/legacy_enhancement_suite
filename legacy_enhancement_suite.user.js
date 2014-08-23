@@ -481,7 +481,9 @@ registerFunction(function addVoteNotification() {
     var sec_until_reset =
       (hrs_until_reset * SEC_IN_HOUR) -
       (date.getUTCMinutes() * SEC_IN_MINUTE) -
-      (date.getUTCSeconds());
+      (date.getUTCSeconds()) +
+      5 * SEC_IN_MINUTE; // add a bit of a buffer just in case
+
     return cachedFetchWithRefresh(
       "voting:canvote",
       sec_until_reset,
