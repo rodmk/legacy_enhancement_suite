@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.11
+// @version     0.0.12
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://locachejs.org/build/locache.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.js
@@ -415,9 +415,20 @@ registerFunction(function preventMultiAttack() {
                    input[value="Attack Again"],\
                    input[value="Hunt Again"]');
   atk_btn.each(function() {
-    $(this).click(function() {
-      $(this).prop('disabled', true);
-    });
+    var btn = $(this);
+    var disable_btn = function() { btn.prop('disabled', 'disabled'); };
+
+    // Handle form submission vs button onclick differently, since for forms we
+    // want to disable button on submit (post-submission), whereas for buttons
+    // we want to disable it on click (after the native onclick handler fires)
+    switch ($(this).prop('type')) {
+      case 'submit':
+        $('form').submit(disable_btn);
+        break;
+      case 'button':
+        btn.click(disable_btn);
+        break;
+    }
   });
 }, [ "fight\\d*.php", "hunting\\d*.php", "map2.php" ]);
 
