@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.9
+// @version     0.0.10
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://locachejs.org/build/locache.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.js
@@ -216,6 +216,23 @@ function getNextSpecialHuntTime() {
   return next_hunt_time;
 }
 
+/**
+ * FEATURE: Disables form submit buttons after clicking them on them once.
+ *
+ * Has the nice side effect of preventing things like hitting the multi-attack
+ * error page from mashing the attack button.
+ */
+registerFunction(function preventMultiFormSubmitClick() {
+  /* jshint multistr:true */
+  $('input[type=button],\
+     input[type=submit]').each(function() {
+    $(this).click(function() {
+      $(this).prop('disabled', true);
+    });
+  });
+}, [ ".*" ]);
+
+
 // =============================================================================
 //                                Profiles
 // =============================================================================
@@ -395,31 +412,6 @@ function addTop10ExportButton(table_title) {
   var title = $('font:contains("' + table_title + '")');
   title.after(link);
 }
-
-
-// =============================================================================
-//                                 Combat
-// =============================================================================
-/**
- * FEATURE: Make attack buttons clickable once (prevents multi-attack errors).
- * For those of us who like frantically mashing 'attack' and think it's absurd
- * to hit the 'multi-attack' error page as a result.
- */
-registerFunction(function preventMultiAttack() {
-  // We simply disable the button after clicking on it once. I don't know which
-  // buttons can cause multi-attack errors, so to be safe I fixed all attack
-  // buttons I could find.
-  /* jshint multistr:true */
-  var atk_btn = $('input[value="Attack"],\
-                   input[value="Attack Target"],\
-                   input[value="Attack Again"],\
-                   input[value="Hunt Again"]');
-  atk_btn.each(function() {
-    $(this).click(function() {
-      $(this).prop('disabled', true);
-    });
-  });
-}, [ "fight\\d*.php", "hunting\\d*.php", "map2.php" ]);
 
 // =============================================================================
 //                               Wasteland
