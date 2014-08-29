@@ -446,9 +446,15 @@ registerFunction(function wlMapCoOrds() {
       var offX  = (e.offsetX || e.clientX - $(e.target).offset().left + window.pageXOffset);
       var offY  = (e.offsetY || e.clientY - $(e.target).offset().top  + window.pageYOffset);
       var x = Math.ceil(offX / 33);
-      var y = Math.ceil(offY / 33);
-      coords.children().text(x + ',' + y);
-      ddrivetip(coords.html(), 35);
+      var y = Math.ceil((offY - 5) / 33); // top is 5px off
+
+      if (x >= 1 && x <= 15 && y >= 1 && y <= 15) {
+        coords.children().text(x + ',' + y);
+        ddrivetip(coords.html(), 35);
+      } else {
+        // Hide tooltip when out of bounds
+        hideddrivetip();
+      }
     })
     .mouseout(hideddrivetip);
 }, [ 'map.php' ]);
