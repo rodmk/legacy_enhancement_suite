@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.12
+// @version     0.0.13
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://locachejs.org/build/locache.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.js
@@ -314,6 +314,60 @@ function selectToMap(select) {
   });
   return map;
 }
+
+/**
+ * FEATURE: Adds tooltips (where possible) to items in search screen.
+ * Credit goes to langer for the implementation.
+ */
+registerFunction(function addMarketSearchTooltips() {
+  var markets = {};
+
+  //Select all item rows from search
+  $('table.maintable:contains(Name)').each(function(){
+    //Scrape item name, price & trades from row
+    var name = $(this).find('td:contains("Name")').next().text().trim();
+    var price = $(this).find('td:contains("Price")').next().text().trim();
+    var trades = $(this).find('td:contains("Trades")').next().text().trim();
+    var link = $(this).find('a:has(img)').attr('href');
+    var owner = link.split('=').pop();
+
+    //Determine key & count amount of similar items on a given market
+    var key = [owner, name, price, trades].join(':');
+    markets[key] = markets.hasOwnProperty(key) ? markets[key] + 1 : 0;
+    var numb = markets[key];
+
+    //Image hover to show item details
+    var item_tooltip;
+    $(this).find('img[src*="items"]')
+      .mouseover(function() {
+        if (!item_tooltip) {
+          var market_page = syncGet(link);
+          //Find matching item as hovered over
+          var match = $('table[cellpadding="1"]', market_page)
+            .filter(function(){
+              return (
+                $(this).find('td:contains("Name")').next().text().trim() === name &&
+                $(this).find('td:contains("Price")').next().text().trim() === price + ' each' &&
+                $(this).find('td:contains("Trades")').next().text().trim() === trades
+              );
+            })
+            .find('a:has(img)');
+          //Make sure the item is still on the market since searching
+          if (match.length) {
+            //Select the nth similar item on the market under the above attributes
+            var item_url = match.eq(numb).attr('href').match(/'(.*)'/).pop();
+            var item_data = syncGet(item_url);
+            item_tooltip = $('center', item_data).html();
+          } else {
+            item_tooltip = 'Error - Item Cannot Be Found';
+          }
+        }
+
+        ddrivetip(item_tooltip, 450);
+      })
+      .mouseout(hideddrivetip);
+  });
+}, [ "marketsearch2.php" ]);
 
 // =============================================================================
 //                                Abilities
@@ -645,6 +699,19 @@ function fontAwesomeIcon(klass) {
 
 function mod(n, m) {
   return ((n % m) + m) % m;
+}
+
+/**
+ * Does a synchronous (blocking) get and returns the result.
+ */
+function syncGet(url) {
+  var fetched_data;
+  $.ajax({
+      url: url,
+      async: false,
+      success: function(data) { fetched_data = data; },
+  });
+  return fetched_data;
 }
 
 // ====================================== END ==================================
