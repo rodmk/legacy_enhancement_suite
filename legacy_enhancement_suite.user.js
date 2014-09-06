@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.15
+// @version     0.0.16
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js
 // @require     http://locachejs.org/build/locache.js
@@ -303,6 +303,22 @@ registerFunction(function setUpStand() {
     var add_btn = $('input[value="Add Item"]');
     add_btn.click();
   }));
+
+  // FEATURE: Maintain scroll position after taking item from stand.
+  // Makes taking consecutive items of the same type a little easier.
+  // When we take an item, we store the scroll position. When we arrive back at
+  // the page, we restore the scroll position and clear the storage.
+  var MARKET_SCROLL_KEY = "market:scrollpos";
+  var scroll_pos = locache.session.get(MARKET_SCROLL_KEY);
+  if (scroll_pos) {
+    $(window).scrollTop(scroll_pos);
+    locache.session.set(MARKET_SCROLL_KEY, 0);
+  }
+  $('a:contains("Take One")').each(function() {
+    $(this).click(function() {
+      locache.session.set(MARKET_SCROLL_KEY, $(window).scrollTop());
+    });
+  });
 }, [ "market3.php" ]);
 
 /**
