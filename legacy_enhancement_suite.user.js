@@ -460,9 +460,15 @@ function addTop10ExportButton(table_title) {
   var data = 'data:text,' + export_text;
 
   // Add icon-link to document with exported text
-  var link = $("<a style='position: relative; right: 5px; float: right;''>");
-  link.attr('href', data);
-  link.append(fontAwesomeIcon('fa-file-text'));
+  var link = $("<a>")
+    .attr('href', data)
+    .append(fontAwesomeIcon('fa-file-text'))
+    .css({
+      'float': 'right',
+      'position': 'relative',
+      'right': '5px',
+    });
+
   var title = $('font:contains("' + table_title + '")');
   title.after(link);
 }
