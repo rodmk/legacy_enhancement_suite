@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.16
+// @version     0.0.17
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js
 // @require     http://locachejs.org/build/locache.js
@@ -866,6 +866,23 @@ registerFunction(function wlMapCoOrds() {
     })
     .mouseout(hideddrivetip);
 }, [ 'map.php' ]);
+
+/**
+ * FEATURE: Adds wl 'exit' link to wasteland quicklink.
+ */
+registerFunction(function addWLExitQuickLink() {
+  $('div.sidebox a[href="map.php"]').each(function() {
+    // Check character bg to see if we're in the WL or not.
+    var in_wl = $('div.char-bg').css('background-image').contains('char_bg_waste');
+    if (in_wl) {
+      var link = $('<a>', {
+        text: ' (Exit)',
+        href: URI("/map.php").query({ 'move': 1 }),
+      });
+      $(this).after(link);
+    }
+  });
+}, [ ".*" ]);
 
 // =============================================================================
 //                               Platinum Store
