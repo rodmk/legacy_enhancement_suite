@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.17
+// @version     0.0.18
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js
 // @require     http://locachejs.org/build/locache.js
@@ -70,7 +70,15 @@ function executeFunctions() {
   var current_path = window.location.pathname;
   $.each(function_registry, function(rule, fns) {
     if (current_path.match(rule)) {
-      $.each(fns, function(i, fn) { fn(); });
+      $.each(fns, function() {
+        // Log error messages if an individual function fails, but don't stop
+        // execution on exception.
+        try {
+          this();
+        } catch (e) {
+          console.error(e.message);
+        }
+      });
     }
   });
 }
