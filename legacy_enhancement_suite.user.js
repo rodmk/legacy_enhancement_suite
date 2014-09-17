@@ -54,6 +54,11 @@ locache.cleanup();
  */
 var function_registry = {};
 function registerFunction(fn, path_rules) {
+  assert(
+    path_rules !== undefined && path_rules.length > 0,
+    'path_rules cannot be empty'
+  );
+
   $.each(path_rules, function(i, rule) {
     if (rule in function_registry) {
       function_registry[rule].push(fn);
@@ -1345,6 +1350,15 @@ function syncGet(url) {
       success: function(data) { fetched_data = data; },
   });
   return fetched_data;
+}
+
+/**
+ * Simple utility assert function.
+ */
+function assert(condition, msg) {
+  if (!condition) {
+    throw new Error(msg);
+  }
 }
 
 // ====================================== END ==================================
