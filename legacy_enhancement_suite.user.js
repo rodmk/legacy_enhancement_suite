@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.18
+// @version     0.0.19
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js
 // @require     http://locachejs.org/build/locache.js
@@ -881,7 +881,15 @@ registerFunction(function wlMapCoOrds() {
 registerFunction(function addWLExitQuickLink() {
   $('div.sidebox a[href="map.php"]').each(function() {
     // Check character bg to see if we're in the WL or not.
-    var in_wl = $('div.char-bg').css('background-image').contains('char_bg_waste');
+    var char_bg = $('div.char-bg');
+    var in_wl;
+    if (char_bg.length > 0) {
+      in_wl = char_bg.css('background-image').indexOf('char_bg_waste') > -1;
+    } else {
+      // If we don't have character bg available to us, always show the link.
+      in_wl = true;
+    }
+
     if (in_wl) {
       var link = $('<a>', {
         text: ' (Exit)',
