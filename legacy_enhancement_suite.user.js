@@ -911,6 +911,7 @@ registerFunction(function addWLExitQuickLink() {
  */
 registerFunction(function addAlertPreview() {
   var SQW = 33; // square width = 33px
+  var PW = 3 * SQW - 3; // preview width (adjusted for borders)
 
   // Returns 3x3 map preview centered around x,y coords
   function mapPreview(x, y) {
@@ -923,15 +924,18 @@ registerFunction(function addAlertPreview() {
         'background': sprintf('url(%s)', map_uri.href()),
         // Use CSS to crop/adjust image location
         'position': 'absolute',
-        'clip': sprintf('rect(%dpx, %dpx, %dpx, %dpx)', SQW * (y - 2), SQW * (x + 1), SQW * (y + 1), SQW * (x - 2)),
+        'clip': sprintf(
+          'rect(%dpx, %dpx, %dpx, %dpx)',
+          SQW * (y - 2), SQW * (x + 1), SQW * (y + 1), SQW * (x - 2)
+        ),
         'top': sprintf('%dpx', -SQW * (y - 2)),
         'left': sprintf('%dpx', -SQW * (x - 2)),
       });
 
     var preview = $('<div>')
       .css({
-        'width': sprintf('%dpx', 3 * SQW),
-        'height': sprintf('%dpx', 3 * SQW),
+        'width': sprintf('%dpx', PW),
+        'height': sprintf('%dpx', PW),
       })
       .append(map_preview);
     var container = $('<div>').append(preview);
@@ -946,7 +950,7 @@ registerFunction(function addAlertPreview() {
     var map_preview = mapPreview(x, y).html();
 
     $(this)
-      .mouseover(function() { ddrivetip(map_preview, 3 * SQW); })
+      .mouseover(function() { ddrivetip(map_preview, PW); })
       .mouseout(hideddrivetip);
   });
 }, [ ".*" ]);
