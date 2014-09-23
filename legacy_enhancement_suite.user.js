@@ -26,11 +26,12 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.19
+// @version     0.0.20
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js
 // @require     http://locachejs.org/build/locache.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.js
+// @require     http://cdnjs.cloudflare.com/ajax/libs/sprintf/0.0.7/sprintf.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/URI.js/1.11.2/URI.min.js
 // ==/UserScript==
@@ -902,6 +903,51 @@ registerFunction(function addWLExitQuickLink() {
       });
       $(this).after(link);
     }
+  });
+}, [ ".*" ]);
+
+/**
+ * FEATURE: Adds a 3x3 hovercard preview to gang alerts.
+ */
+registerFunction(function addAlertPreview() {
+  var SQW = 33; // square width = 33px
+
+  // Returns 3x3 map preview centered around x,y coords
+  function mapPreview(x, y) {
+    // Add 'c' parameter to avoid caching
+    var map_uri = URI('/maps/map1_gang.png').query({ 'c': Date.now() });
+    var overlay_uri = URI('/maps/map1_overlay.gif').query({ 'c': Date.now() });
+    var map_preview = $('<img>')
+      .attr({ 'src': overlay_uri.href() })
+      .css({
+        'background': sprintf('url(%s)', map_uri.href()),
+        // Use CSS to crop/adjust image location
+        'position': 'absolute',
+        'clip': sprintf('rect(%dpx, %dpx, %dpx, %dpx)', SQW * (y - 2), SQW * (x + 1), SQW * (y + 1), SQW * (x - 2)),
+        'top': sprintf('%dpx', -SQW * (y - 2)),
+        'left': sprintf('%dpx', -SQW * (x - 2)),
+      });
+
+    var preview = $('<div>')
+      .css({
+        'width': sprintf('%dpx', 3 * SQW),
+        'height': sprintf('%dpx', 3 * SQW),
+      })
+      .append(map_preview);
+    var container = $('<div>').append(preview);
+
+    return container;
+  }
+
+  $('div.sidebox:contains("Gang Alert")').each(function() {
+    var attack_txt = $(this).find('div.gang-alert').text();
+    var coords = attack_txt.match(/(\d+),(\d+)/);
+    var x = parseInt(coords[1]), y = parseInt(coords[2]);
+    var map_preview = mapPreview(x, y).html();
+
+    $(this)
+      .mouseover(function() { ddrivetip(map_preview, 3 * SQW); })
+      .mouseout(hideddrivetip);
   });
 }, [ ".*" ]);
 
