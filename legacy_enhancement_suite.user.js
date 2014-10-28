@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.20
+// @version     0.0.21
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js
 // @require     http://locachejs.org/build/locache.js
@@ -471,7 +471,7 @@ function addTop10ExportButton(table_title) {
     export_text = export_text + (i+1) + ';' + players[i] + ';' + scores[i] + '\n';
   }
   export_text = encodeURIComponent(export_text);
-  var data = 'data:text,' + export_text;
+  var data = 'data:text/plain,' + export_text;
 
   // Add icon-link to document with exported text
   var link = $("<a>")
