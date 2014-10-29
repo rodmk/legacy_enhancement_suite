@@ -26,10 +26,11 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.21
+// @version     0.0.22
+// @grant       none
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js
-// @require     http://locachejs.org/build/locache.js
+// @require     https://raw.githubusercontent.com/rodmk/locache/master/locache.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/sprintf/0.0.7/sprintf.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore.js
