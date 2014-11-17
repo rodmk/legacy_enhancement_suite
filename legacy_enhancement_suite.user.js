@@ -957,6 +957,26 @@ registerFunction(function addAlertPreview() {
 }, [ ".*" ]);
 
 // =============================================================================
+//                                   Jobs
+// =============================================================================
+/**
+ * FEATURE: Select to do as many jobs as your current energy allows by default.
+ */
+registerFunction(function autoSelectMaxJobs() {
+  var energy = parseInt($("#turnbox").text().replace(/\,/g,''));
+  var energy_cost = parseInt($("tr:contains('Energy Cost') font.text").text());
+  var max_jobs = Math.floor(energy/energy_cost);
+
+  var job_selector = $(".selectbox");
+  $.each(selectToMap(job_selector), function (key, value) {
+    if (key <= max_jobs) {
+      job_selector.val(key).change();
+    }
+  });
+}, [ "jobcenter2.php", "avatarjob2.php" ]);
+
+
+// =============================================================================
 //                               Platinum Store
 // =============================================================================
 /**
