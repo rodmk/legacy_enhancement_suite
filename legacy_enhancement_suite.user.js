@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.22
+// @version     0.0.23
 // @grant       none
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js
@@ -242,8 +242,13 @@ registerFunction(function setUpProfile() {
   // FEATURE: Format exp counts to include commas.
   $('img[title*="Exp :"]').each(function(){
     $(this)
-      .attr('title',$(this).attr('title').replace(/\B(?=(\d{3})+(?!\d))/g, ","))
-      .attr('alt',$(this).attr('title'));
+      .attr('title', numberWithCommas($(this).attr('title')))
+      .attr('alt', $(this).attr('title'));
+  });
+
+  // FEATURE: Format player honors points to include commas.
+  $('.maintable:contains("Player Honors") .darktext').each(function() {
+    $(this).text(numberWithCommas($(this).text()));
   });
 }, [ "profile.php" ]);
 
@@ -1408,6 +1413,16 @@ function fontAwesomeIcon(klass) {
 
 function mod(n, m) {
   return ((n % m) + m) % m;
+}
+
+/**
+ * Formats a number to have comma separators (e.g. 1234567 -> 1,234,567).
+ * @source http://stackoverflow.com/a/2901298
+ */
+function numberWithCommas(x) {
+  var parts = x.toString().split(".");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return parts.join(".");
 }
 
 /**
