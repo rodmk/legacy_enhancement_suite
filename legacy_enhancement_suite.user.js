@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.23
+// @version     0.0.24
 // @grant       none
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js
@@ -325,21 +325,13 @@ registerFunction(function setUpStand() {
   }));
 
   // FEATURE: Maintain scroll position after taking item from stand.
-  // Makes taking consecutive items of the same type a little easier.
-  // When we take an item, we store the scroll position. When we arrive back at
-  // the page, we restore the scroll position and clear the storage.
-  var MARKET_SCROLL_KEY = "market:scrollpos";
-  var scroll_pos = locache.session.get(MARKET_SCROLL_KEY);
-  if (scroll_pos) {
-    $(window).scrollTop(scroll_pos);
-    locache.session.set(MARKET_SCROLL_KEY, 0);
-  }
-  $('a:contains("Take One")').each(function() {
-    $(this).click(function() {
-      locache.session.set(MARKET_SCROLL_KEY, $(window).scrollTop());
-    });
-  });
+  preserveScrollPosOnClick($('a:contains("Take One")'));
 }, [ "market3.php" ]);
+
+registerFunction(function setUpStorage() {
+  // FEATURE: Maintain scroll position after taking item from storage.
+  preserveScrollPosOnClick($('a:contains("Take One")'));
+}, [ "market6.php" ]);
 
 /**
  * Transforms a select tag object to a [value => text] map
@@ -350,6 +342,29 @@ function selectToMap(select) {
     map[this.value] = this.innerHTML;
   });
   return map;
+}
+
+/**
+ * Function to preserve scroll position on refresh after clicking on a link on
+ * the page. On call this function restores scroll position (if any) and sets
+ * up onclick handlers on elements to preserve scroll position.
+ */
+function preserveScrollPosOnClick(elements) {
+  var scroll_pos_cache_key = sprintf("scrollpos:%s", location.pathname);
+
+  // Restore scroll position
+  var scroll_pos = locache.session.get(scroll_pos_cache_key);
+  if (scroll_pos) {
+    $(window).scrollTop(scroll_pos);
+    locache.session.set(scroll_pos_cache_key, 0);
+  }
+
+  // Register onclick handlers for elements
+  $.each(elements, function() {
+    $(this).click(function() {
+      locache.session.set(scroll_pos_cache_key, $(window).scrollTop());
+    });
+  });
 }
 
 /**
