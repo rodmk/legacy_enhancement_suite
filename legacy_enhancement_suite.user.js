@@ -26,8 +26,9 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.24
+// @version     0.0.25
 // @grant       none
+// @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js
 // @require     https://raw.githubusercontent.com/rodmk/locache/master/locache.js
@@ -594,6 +595,7 @@ registerFunction(function huntingCrystalImprovements() {
   function Inventory(html) {
       this.items = getItems();
       this.key = $(html).find('form').attr('action').match(/[a-zA-Z]+$/g).pop();
+      this.freeSpace = $(html).find('.nbaltrow:eq(1) img[id^=space]').length - $(html).find('.nbaltrow:eq(1) img[id^=item]').length;
       var key = this.key;
       //Inventory items encapsulated to organise data
       function Item(name, slot, trades, id) {
@@ -653,10 +655,47 @@ registerFunction(function huntingCrystalImprovements() {
       //Ordered by trades on given crystal ascending, then everything else descending
       this.matchCrystal = function(crystal) {
           return this.getCrystals().filter(function(a) {
-              return a.id !== crystal.id && a.name == crystal.name && crystal.name.search('Perfect')==-1;
+              return a.id !== crystal.id && a.name == crystal.name && crystal.name.search('Perfect') == -1;
           }).sort(function(a, b) {
               return (a.trades >= crystal.trades && b.trades >= crystal.trades) ? a.trades - b.trades : b.trades - a.trades;
           });
+      };
+  }
+  /*****************************************************
+                      Hunt Recording Methods
+  /****************************************************/
+  function hunts() {
+      function Record(data) {
+          this.drops = data.drops || {};
+          this.total = data.total || 0;
+          this.add = function(drop) {
+              this.drops[drop] = this.drops.hasOwnProperty(drop) ? this.drops[drop] + 1 : 1;
+              this.total++;
+          };
+      }
+      this.hunts = [];
+      this.add = function(huntNumb, drop) {
+          this.hunts[huntNumb] = new Record(this.hunts[huntNumb] || {});
+          this.hunts[huntNumb].add(drop);
+      };
+      this.save = function() {
+          localStorage.hunts = JSON.stringify(this.hunts);
+      };
+      this.load = function() {
+          var toLoad = localStorage.hunts;
+          if (!toLoad) return;
+          this.hunts = JSON.parse(toLoad);
+      };
+      this.toConsole = function(huntGroup) {
+          if (!this.hunts.hasOwnProperty(huntGroup)) return;
+          var o = this.hunts[huntGroup].drops;
+          var outLog = Object.keys(o).map(function(a) {
+              return {
+                  Name: a,
+                  Qty: o[a]
+              };
+          });
+          console.table(outLog, Object.keys(outLog[0]));
       };
   }
 
@@ -695,7 +734,7 @@ registerFunction(function huntingCrystalImprovements() {
               }, crystal.name + " added to inventory.", r);
           }
           $.ajax({
-              url: 'inventory.php',
+              url: 'inventory.php?m=0',
               async: true,
               success: function(data) {
                   var inv = new Inventory(data);
@@ -713,6 +752,7 @@ registerFunction(function huntingCrystalImprovements() {
                                   //anonymous function as input for merge callback to display merge option on previously merged crystal
                                   function(data) {
                                       var nextInv = new Inventory(data);
+                                      $('#invSpace').text(nextInv.freeSpace);
                                       var newCrystal = nextInv.getCrystals()[0];
                                       doubleRow(newCrystal);
                                       option(newCrystal, nextInv.matchCrystal(newCrystal));
@@ -724,7 +764,6 @@ registerFunction(function huntingCrystalImprovements() {
               }
           });
       }
-
       //Build a clickable button which allows the user to attack
       //the same hunt group again without visiting the hunt page again
       //If there are buttons present, the fight is ongoing
@@ -744,8 +783,14 @@ registerFunction(function huntingCrystalImprovements() {
                   class: "button",
                   value: "Start Another Hunt",
                   disabled: "disabled"
-              }, false, newCell);
-          td.before(newCell);
+              }, false, newCell),
+              newRow = create("tr", {}, false, false);
+          create("td", {
+              class: "standardrow",
+              colspan: "2",
+              align: "center"
+          }, "You have <span id='invSpace'>##</span> inventory spaces remaining.", newRow);
+          td.before(newCell).parent().after(newRow);
 
           //Gather attack string from hunting.php && cookie info for next hunt form
           var form = create("form", {
@@ -771,7 +816,13 @@ registerFunction(function huntingCrystalImprovements() {
               class: "button",
               id: "hunt-" + cookies.hunting_group + "-" + cookies.hunting_level
           }, false, form);
-
+          $.ajax({
+              url: 'inventory.php?m=0',
+              async: true,
+              success: function(data) {
+                  $('#invSpace').text((new Inventory(data)).freeSpace);
+              }
+          });
           $.ajax({
               url: 'hunting.php',
               async: true,
@@ -790,10 +841,26 @@ registerFunction(function huntingCrystalImprovements() {
               $(this).prop("disabled", true);
               form.submit();
           });
-          //Hunt Group 18 - Crystal Entities and crystal drop
-          if (cookies.hunting_group == "18" && $('tbody:contains("Item Found")').length) {
-              checkDrop();
+          var t = new hunts();
+          t.load();
+          var result = $('font:contains("Item Found")');
+          //Any hunt drop
+          if (result.length) {
+              t.add(cookies.hunting_group, result.text().match(/^Item Found : (.*)(?=\.$)/).pop());
+              //Hunt Group 18 - Crystal Entities and crystal drop
+              if (cookies.hunting_group == "18") {
+                  checkDrop();
+              }
+              //Sent to void
+          } else if ($('font:contains("An item was dropped but your inventory was full, so it was sent to the void.")').length) {
+              t.add(cookies.hunting_group, "Void");
+              //No drop (no including when you lose because that could just skew data)
+          } else if (!($('font:contains("You have been defeated")').length + $('a[href="map2.php"]').length)) {
+              t.add(cookies.hunting_group, "NA");
           }
+          t.save();
+          //Print current record to console, commenting out for debugging
+          //t.toConsole(cookies.hunting_group);
       }
   }
   /*****************************************************
@@ -803,7 +870,6 @@ registerFunction(function huntingCrystalImprovements() {
   function invMerge() {
       //Call current inventory as instance of inventory object defined above for managing crystals
       var inv = new Inventory(document.body.innerHTML);
-
       $('img[title*=" Crystal"]').each(function() {
           //Build selectbox containing matching crystal options & merge button
           var slot = $(this).attr('name');
@@ -861,6 +927,55 @@ registerFunction(function huntingCrystalImprovements() {
       });
   }
   /*****************************************************
+                      Hunting Overview Page
+  /****************************************************/
+  //Method to display drop records for NPCs
+  function showDrops() {
+      //Colours which the chart will iterate around, feel free to add new ones
+      var colorList = ["#F7464A", "#46BFBD", "#FDB45C", "#949FB1", "#4D5360"];
+      //Chart options, didn't do much aside from costomise the legend string
+      var options = {
+          segmentShowStroke: true,
+          legendTemplate: "<ul class=\"<%=name.toLowerCase()%>-legend\" style=\"padding:0; text-align:right\"><% for (var i=0; i<segments.length; i++){%><li style=\"margin-left:0px;list-style:none\"><%if(segments[i].label){%><%=segments[i].label.substring(0,18)%> - <%=Math.round(segments[i].value/total*100)%>%<%}%></li><%}%><br/>Total: <%=total%></ul>"
+      };
+      var t = new hunts();
+      t.load();
+      var currRow;
+      var OldpositionToElement = window.positionToElement;
+      //Modify the existing hunt detail update method so the chart & legend fit in and play nice
+      window.positionToElement = function() {
+          OldpositionToElement.apply(this, arguments);
+          //Run animation only when changing between different hunt groups, it's annoying when it's for same group w/ different level
+          options.animateRotate = currRow != arguments[0][0].dataset.row
+          currRow = arguments[0][0].dataset.row;
+          var record = t.hunts[currRow];
+          if (record) {
+              var canvas = create("canvas", {
+                  id: "huntRec",
+                  width: 200,
+                  height: 200
+              });
+              $('#group-desc-story').after(canvas);
+              var pieData = [];
+              var counter = 0;
+              for (var x in record.drops) {
+                  if (x) {
+                      counter++;
+                      pieData.push({
+                          label: x,
+                          value: record.drops[x],
+                          color: colorList[counter % colorList.length]
+                      });
+                  }
+              }
+              var dropChart = new Chart(document.getElementById("huntRec").getContext("2d")).Pie(pieData, options);
+              $('#group-stats').append(dropChart.generateLegend());
+          }
+      };
+      //Update initial hunt group
+      positionToElement(select, false);
+  }
+  /*****************************************************
                       Misc
   /****************************************************/
   //call methods where relevant
@@ -871,8 +986,11 @@ registerFunction(function huntingCrystalImprovements() {
       case '/hunting3.php':
           huntMerge();
           break;
+      case '/hunting.php':
+          showDrops();
+          break;
   }
-}, [ 'hunting3.php', 'inventory.php' ]);
+}, [ 'hunting.php', 'hunting3.php', 'inventory.php' ]);
 
 
 // =============================================================================

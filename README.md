@@ -66,6 +66,8 @@ As long as you are not in a text box and press "A", the item will be added to th
 - A "!" will appear next to the "Hunting" Tab if you are able to hunt a Special NPC.
 - Allows the player to Hunt the same Hunting Group on the same page as the final hit that results in victory.
 - Allows the player to combine a Crystal that just dropped with another if found in your Inventory.
+- Shows remaining inventory spaces left after hunting.
+- Tracks drops by hunting groups and shows drops and drop rates in the hunting page.
 
 ### Wastelands
 - You can now hover over specific Squares to view it's coordinates as a tooltip.
