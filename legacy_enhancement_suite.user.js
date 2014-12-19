@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.25
+// @version     0.0.26
 // @grant       none
 // @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -1035,13 +1035,30 @@ registerFunction(function addWLExitQuickLink() {
       in_wl = true;
     }
 
+    var link;
     if (in_wl) {
-      var link = $('<a>', {
+      link = $('<a>', {
         text: ' (Exit)',
         href: URI("/map.php").query({ 'move': 1 }),
       });
-      $(this).after(link);
+    } else {
+      var key = cachedFetchWithRefresh(
+        'wasteland:entry_key',
+        SEC_IN_DAY,
+        '/map.php',
+        function(data) {
+          var uri = URI($(data).find("#enter-wasteland")[0].href);
+          var wl_key = uri.query(true).key;
+          return wl_key;
+        }
+      );
+
+      link = $('<a>', {
+        text: ' (Enter)',
+        href: URI("/map2.php").query({ 'c': 'hq', 'join': 1, 'key': key }),
+      });
     }
+    $(this).after(link);
   });
 }, [ ".*" ]);
 

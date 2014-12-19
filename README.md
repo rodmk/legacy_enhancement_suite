@@ -71,7 +71,7 @@ As long as you are not in a text box and press "A", the item will be added to th
 
 ### Wastelands
 - You can now hover over specific Squares to view it's coordinates as a tooltip.
-- If "Wastelands" is a Quick Link, a new "(Exit)" link is created beside it. This link returns you to the Hive.
+- If "Wastelands" is a Quick Link, new "(Enter)" or "(Exit)" links are created beside it, depending on whether you're outside or inside the wasteland, respectively. This link lets you quickly enter/exit the wasteland. *Note: This functionality requires your character portrait to be visible to work.*
 - Hovering over a Gang Alert now shows a 3x3 grid of the area that was Alerted.
 
 ### Combat
