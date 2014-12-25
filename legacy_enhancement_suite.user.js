@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.26
+// @version     0.0.27
 // @grant       none
 // @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -936,7 +936,7 @@ registerFunction(function huntingCrystalImprovements() {
       //Chart options, didn't do much aside from costomise the legend string
       var options = {
           segmentShowStroke: true,
-          legendTemplate: "<ul class=\"<%=name.toLowerCase()%>-legend\" style=\"padding:0; text-align:right\"><% for (var i=0; i<segments.length; i++){%><li style=\"margin-left:0px;list-style:none\"><%if(segments[i].label){%><%=segments[i].label.substring(0,18)%> - <%=Math.round(segments[i].value/total*100)%>%<%}%></li><%}%><br/>Total: <%=total%></ul>"
+          legendTemplate: "<ul class=\"<%=name.toLowerCase()%>-legend\" style=\"padding:0; text-align:right\"><% for (var i=0; i<segments.length; i++){%><li style=\"margin-left:0px;list-style:none; font-size:9.88px\"><%if(segments[i].label){%><%=segments[i].label%> - <%=(segments[i].value/total*100).toFixed(2)%>%<%}%></li><%}%><br/>Total: <%=total%></ul>"
       };
       var t = new hunts();
       t.load();
@@ -968,7 +968,7 @@ registerFunction(function huntingCrystalImprovements() {
                       });
                   }
               }
-              var dropChart = new Chart(document.getElementById("huntRec").getContext("2d")).Pie(pieData, options);
+              var dropChart = new Chart(document.getElementById("huntRec").getContext("2d")).Pie(pieData.sort(function(a,b){return b.value-a.value;}), options);
               $('#group-stats').append(dropChart.generateLegend());
           }
       };
