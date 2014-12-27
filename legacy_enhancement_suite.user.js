@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.27
+// @version     0.0.28
 // @grant       none
 // @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -85,6 +85,7 @@ function executeFunctions() {
           this();
         } catch (e) {
           console.error(e.message);
+          console.error(e.stack);
         }
       });
     }
@@ -1047,9 +1048,11 @@ registerFunction(function addWLExitQuickLink() {
         SEC_IN_DAY,
         '/map.php',
         function(data) {
-          var uri = URI($(data).find("#enter-wasteland")[0].href);
-          var wl_key = uri.query(true).key;
-          return wl_key;
+          var wl_link = $(data).find("#enter-wasteland");
+          if (wl_link.length) {
+            var wl_key = URI(wl_link[0].href).query(true).key;
+            return wl_key;
+          }
         }
       );
 
@@ -1486,6 +1489,16 @@ var SERVER_UTC_OFFSET_HRS = -5;
 // =============================================================================
 //                                 Utilities
 // =============================================================================
+function cacheSet(key, value, timeout) {
+  if (value !== undefined) {
+    locache.set(sessionKey(key), value, timeout);
+  }
+}
+
+function cacheGet(key) {
+  return locache.get(sessionKey(key));
+}
+
 /**
  * Adds caching to a function. Fetches from cache if value is there, otherwise
  * generates, stores in cache, and returns results of fetch_fn.
@@ -1499,35 +1512,27 @@ function cachedFetch(key, timeout, fetch_fn) {
   return value;
 }
 
-function cacheSet(key, value, timeout) {
-  locache.set(sessionKey(key), value, timeout);
-}
-
-function cacheGet(key) {
-  return locache.get(sessionKey(key));
-}
-
 /**
- * Fetching/caching function. Fetches key from cache if available, otherwise
- * does an ajax get to url and applies fn to compute return value. If already
- * at url, applies fn, and stores result in cache.
+ * Fetching/caching function. If already at url, applies fn, and stores result
+ * in cache. Otherwise, fetches key from cache if available, and if not in
+ * cache then does an ajax get to url and applies fn to compute return value.
  */
 function cachedFetchWithRefresh(key, timeout, path, fn) {
   var value;
+
   if (window.location.pathname === path) {
     value = fn(document);
-    cacheSet(key, value, timeout);
-  } else {
-    value = cachedFetch(key, timeout, function() {
-      var ret;
-      $.ajax({
-        url: path,
-        async: false,
-        success: function(data) { ret = fn(data); },
-      });
-      return ret;
-    });
+    if (value !== undefined) {
+      cacheSet(key, value, timeout);
+      return value;
+    }
   }
+
+  value = cachedFetch(key, timeout, function() {
+    var ret = fn(syncGet(path));
+    return ret;
+  });
+
   return value;
 }
 
