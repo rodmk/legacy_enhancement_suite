@@ -76,6 +76,7 @@ As long as you are not in a text box and press "A", the item will be added to th
 
 ### Combat
 - Attack Buttons are now rendered un-clickable when clicked once. This prevents multiple clicks which may break fights (multi-attack error).
+- Show the combat search results page by default.
 
 Acknowledgements
 ----------------

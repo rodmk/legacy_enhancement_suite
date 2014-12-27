@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.28
+// @version     0.0.29
 // @grant       none
 // @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -545,6 +545,14 @@ registerFunction(function preventMultiAttack() {
     }
   });
 }, [ "fight\\d*.php", "hunting\\d*.php", "map2.php" ]);
+
+registerFunction(function setUpPlayerCombat() {
+  // FEATURE: Show 'fight player' search results by default.
+  var search_btn = $('#search');
+  if (search_btn.size() === 1) {
+    search_btn.click();
+  }
+}, [ 'fight.php' ]);
 
 // =============================================================================
 //                                Hunting
