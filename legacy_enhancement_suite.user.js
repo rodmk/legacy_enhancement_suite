@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.29
+// @version     0.0.30
 // @grant       none
 // @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -1051,13 +1051,16 @@ registerFunction(function addWLExitQuickLink() {
         href: URI("/map.php").query({ 'move': 1 }),
       });
     } else {
-      var key = cachedFetchWithRefresh(
+      var key = cachedFetch(
         'wasteland:entry_key',
         SEC_IN_DAY,
-        '/map.php',
-        function(data) {
-          var wl_link = $(data).find("#enter-wasteland");
-          if (wl_link.length) {
+        function() {
+          var hp = bar1; // from template.php
+          // Only attempt fetching WL key if we are alive. Otherwise, there is
+          // no WL link and no key for us to fetch.
+          if (hp > 0) {
+            var data = syncGet('/map.php');
+            var wl_link = $(data).find("#enter-wasteland");
             var wl_key = URI(wl_link[0].href).query(true).key;
             return wl_key;
           }
