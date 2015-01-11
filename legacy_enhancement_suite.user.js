@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.30
+// @version     0.0.31
 // @grant       none
 // @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -286,11 +286,16 @@ registerFunction(function addDeleteMessageConfirm() {
 //                                  Market
 // =============================================================================
 registerFunction(function setUpStand() {
+  // FEATURE: Remove 'none' items from selector.
+  $(".selectbox option:contains('None')").remove();
+
   // FEATURE: When selecting items from your inventory, if you already have that
   // item in your stand, copy over the price/currency for it.
   var item_selector = $('select[name="item"]');
   item_selector.change(function () {
     var selected_item = $.trim($(this).find("option:selected").text());
+    if (!selected_item) { return; }
+
     var price_text = $("font.darktext > font:contains('"+selected_item+"')")
       .closest('tbody')
       .find("font:contains('each')");
@@ -307,15 +312,7 @@ registerFunction(function setUpStand() {
     $('input[name="price"]').val(num);
     $('input[select="currency"]').val(currency === 'c' ? 1 : 2);
   });
-
-  // FEATURE: Automatically select by default the first non-null item.
-  var map = selectToMap(item_selector);
-  $.each(map, function(key, value){
-    if ($.trim(value) !== "None") {
-      item_selector.val(key).change();
-      return false;
-    }
-  });
+  item_selector.change();
 
   // FEATURE: Auto-check add all items with the same price by default.
   $('input[name="multi"]').prop('checked', true);
@@ -331,20 +328,12 @@ registerFunction(function setUpStand() {
 }, [ "market3.php" ]);
 
 registerFunction(function setUpStorage() {
+  // FEATURE: Remove null options from drop down.
+  $(".selectbox option:contains('None')").remove();
+
   // FEATURE: Maintain scroll position after taking item from storage.
   preserveScrollPosOnClick($('a:contains("Take One")'));
 }, [ "market6.php" ]);
-
-/**
- * Transforms a select tag object to a [value => text] map
- */
-function selectToMap(select) {
-  var map = {};
-  select.children().each(function() {
-    map[this.value] = this.innerHTML;
-  });
-  return map;
-}
 
 /**
  * Function to preserve scroll position on refresh after clicking on a link on
@@ -1136,10 +1125,9 @@ registerFunction(function autoSelectMaxJobs() {
   var energy_cost = parseInt($("tr:contains('Energy Cost') font.text").text());
   var max_jobs = Math.floor(energy/energy_cost);
 
-  var job_selector = $(".selectbox");
-  $.each(selectToMap(job_selector), function (key, value) {
-    if (key <= max_jobs) {
-      job_selector.val(key).change();
+  $(".selectbox option").each(function() {
+    if ($(this).val() <= max_jobs) {
+      $(this).prop('selected', true);
     }
   });
 }, [ "jobcenter2.php", "avatarjob2.php" ]);
