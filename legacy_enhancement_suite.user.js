@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.31
+// @version     0.0.32
 // @grant       none
 // @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -1056,10 +1056,12 @@ registerFunction(function addWLExitQuickLink() {
         }
       );
 
-      link = $('<a>', {
-        text: ' (Enter)',
-        href: URI("/map2.php").query({ 'c': 'hq', 'join': 1, 'key': key }),
-      });
+      if (key) {
+        link = $('<a>', {
+          text: ' (Enter)',
+          href: URI("/map2.php").query({ 'c': 'hq', 'join': 1, 'key': key }),
+        });
+      }
     }
     $(this).after(link);
   });
