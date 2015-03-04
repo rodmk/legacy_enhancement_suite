@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.33
+// @version     0.0.34
 // @grant       none
 // @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -536,6 +536,36 @@ registerFunction(function preventMultiAttack() {
 }, [ "fight\\d*.php", "hunting\\d*.php", "map2.php" ]);
 
 registerFunction(function setUpPlayerCombat() {
+  // FEATURE: Pre-fill attack box with first name from list.
+  var observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.addedNodes.length) {
+        // Set first player row as target
+        if (mutation.target.className === "search_row player_row") {
+          if (!$('#target').val()) {
+            var player_name = $(mutation.addedNodes[0]).text().trim();
+            $('#target').val(player_name);
+            $('#begin').removeAttr('disabled');
+          }
+        }
+
+        // Add click handler to 'back to search link' to clear target box
+        if (mutation.target.className === "search_row") {
+          var back_link = $(mutation.addedNodes).find('a:contains("Back to Search Setup")');
+          if (back_link.length) {
+            back_link.click(function () {
+              $('#target').val('');
+            });
+          }
+        }
+      }
+    });
+  });
+  observer.observe(
+    $('#searchbox')[0],
+    { subtree: true, childList: true, characterData: true }
+  );
+
   // FEATURE: Show 'fight player' search results by default.
   var search_btn = $('#search');
   if (search_btn.size() === 1) {
