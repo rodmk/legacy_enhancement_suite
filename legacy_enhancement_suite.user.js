@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.35
+// @version     0.0.36
 // @grant       none
 // @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -118,19 +118,17 @@ registerFunction(function addQuickHealKeybinding() {
  * @return {string} Secret key use for Hospital operations
  */
 function getHospitalKey() {
-  return cachedFetch("hospital:key", SEC_IN_HOUR, function() {
-    var hospital_key;
-    $.ajax({
-      url: "/hospital.php",
-      async: false,
-      success: function(data) {
-        // Fetch the key from any uri containing the key param in the page
-        var uri = URI($(data).find("a[href*=key]:first")[0].href);
-        hospital_key = uri.query(true).key;
-      },
-    });
-    return hospital_key;
-  });
+  return cachedFetchWithRefresh(
+    "hospital:key",
+    SEC_IN_DAY,
+    "/hospital.php",
+    function(data) {
+      // Fetch the key from any uri containing the key param in the page
+      var uri = URI($(data).find("a[href*='hospital.php'][href*=key]:first")[0].href);
+      hospital_key = uri.query(true).key;
+      return hospital_key;
+    }
+  );
 }
 
 /**
