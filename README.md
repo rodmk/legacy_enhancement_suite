@@ -15,6 +15,13 @@ Installation Instructions
 
 Features
 --------
+### General Layout
+- Adds links to the following:
+ - Character image to character design page.
+ - Energy count to Job Center or Observatory depending on level.
+ - Credits count to Bank.
+ - Tokens count to Casino.
+
 ### Healing
 - If "Hospital" is a Quick Link, a new "(Heal)" link is created beside it.
  - *This link is essentially a full heal.

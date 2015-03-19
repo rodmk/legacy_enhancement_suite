@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.36
+// @version     0.0.37
 // @grant       none
 // @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -96,6 +96,30 @@ $(document).ready(executeFunctions);
 // =============================================================================
 //                               General Layout
 // =============================================================================
+/**
+ * FEATURE: Add some helpful links to elements of the character/stats boxes.
+ */
+registerFunction(function addStatBoxLinks() {
+  // Linkify character image to character design page.
+  var character_image = $('div.aura');
+  character_image.wrapInner($('<a/>').attr('href', '/design.php'));
+
+  // Linkify stats box stats to relevant places in the game.
+  var player_level = parseInt($('.levelbox').text());
+  var link_map = {
+    'Energy': player_level >= 80 ? '/avatarjob.php' : '/jobcenter.php',
+    'Credits': '/bank.php',
+    'Tokens': '/casino.php',
+  };
+
+  $.each(link_map, function(row, href) {
+    var target_cell = $("tr td.game-left:contains('" + row + "')").next();
+    var id = target_cell.attr('id');
+    target_cell.removeAttr('id');
+    target_cell.wrapInner($('<a/>').attr({ 'href': href, 'id': id }));
+  });
+}, [ ".*" ]);
+
 /**
  * FEATURE: If there's a quick link to hospital/sanctuary of healing, adds a
  * 'heal' link (actually an ajax call) right next to it.
