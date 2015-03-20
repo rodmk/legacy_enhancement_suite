@@ -18,6 +18,8 @@ Features
 ### General Layout
 - Adds links to the following:
  - Character image to character design page.
+ - Level box to stat point allocation page.
+ - Player flag to flag editor.
  - Energy count to Job Center or Observatory depending on level.
  - Credits count to Bank.
  - Tokens count to Casino.

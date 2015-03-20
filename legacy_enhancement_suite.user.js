@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.38
+// @version     0.0.39
 // @grant       none
 // @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -100,9 +100,15 @@ $(document).ready(executeFunctions);
  * FEATURE: Add some helpful links to elements of the character/stats boxes.
  */
 registerFunction(function addStatBoxLinks() {
-  // Linkify character image to character design page.
+  // Linkify character box elements.
   var character_image = $('div.aura');
   character_image.wrapInner($('<a/>').attr('href', '/design.php'));
+
+  var character_level = $('div.levelbox');
+  character_level.wrapInner($('<a/>').attr('href', '/points.php'));
+
+  var flag = $('img.flag');
+  flag.wrap($('<a/>').attr('href', '/flag.php'));
 
   // Linkify stats box stats to relevant places in the game.
   var player_level = parseInt($('.levelbox').text());
