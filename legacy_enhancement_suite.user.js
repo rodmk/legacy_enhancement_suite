@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.37
+// @version     0.0.38
 // @grant       none
 // @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -1092,36 +1092,36 @@ registerFunction(function addWLExitQuickLink() {
         href: URI("/map.php").query({ 'move': 1 }),
       });
     } else {
-      var WL_ENTRY_KEY_CACHE_KEY = 'wasteland:entry_key';
-      var key = cachedFetch(
-        WL_ENTRY_KEY_CACHE_KEY,
-        SEC_IN_DAY,
-        function() {
-          var hp = bar1; // from template.php
-          // Only attempt fetching WL key if we are alive. Otherwise, there is
-          // no WL link and no key for us to fetch.
-          if (hp > 0) {
-            var data = syncGet('/map.php');
-            var wl_link = $(data).find("#enter-wasteland").prop('href');
-            if (wl_link) {
-              var wl_key = URI(wl_link).query(true).key;
-              return wl_key;
-            } else {
-              // Link won't appear if you're expo'd out. Cache the miss
-              // temporarily so we're not hammering the server on every request.
-              cacheSet(WL_ENTRY_KEY_CACHE_KEY, false, 10 * SEC_IN_MINUTE);
+      link = $('<a>', {
+        text: ' (Enter)',
+        href: '#',
+        click: function() {
+          var key = cachedFetchWithRefresh(
+            'wasteland:entry_key',
+            SEC_IN_DAY,
+            '/map.php',
+            function(data) {
+              var hp = bar1; // from template.php
+              // Only attempt fetching WL key if we are alive. Otherwise, there
+              // is no WL link and no key for us to fetch.
+              if (hp > 0) {
+                var wl_link = $(data).find("#enter-wasteland").prop('href');
+                if (wl_link) {
+                  var wl_key = URI(wl_link).query(true).key;
+                  return wl_key;
+                }
+              }
             }
+          );
+
+          if (key) {
+            var uri = URI("/map2.php").query({ 'c': 'hq', 'join': 1, 'key': key });
+            location.href = uri.href();
           }
         }
-      );
-
-      if (key) {
-        link = $('<a>', {
-          text: ' (Enter)',
-          href: URI("/map2.php").query({ 'c': 'hq', 'join': 1, 'key': key }),
-        });
-      }
+      });
     }
+
     $(this).after(link);
   });
 }, [ ".*" ]);
