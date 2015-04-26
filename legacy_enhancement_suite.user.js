@@ -94,6 +94,27 @@ function executeFunctions() {
 $(document).ready(executeFunctions);
 
 // =============================================================================
+//                              Player Class Helper                             
+// =============================================================================
+var Player = {
+  getHP: function() {
+    var hp = 0;
+    if (bar1 !== undefined) {
+      hp = bar1; // from template.php
+    }
+    return hp;
+  },
+
+  getEnergy: function() {
+    var energy = 0;
+    if ($("#turnbox").length) {
+      energy = parseInt($("#turnbox").text().replace(/\,/g,''));
+    }
+    return energy;
+  },
+}
+
+// =============================================================================
 //                               General Layout
 // =============================================================================
 /**
@@ -1107,7 +1128,7 @@ registerFunction(function addWLExitQuickLink() {
             SEC_IN_DAY,
             '/map.php',
             function(data) {
-              var hp = bar1; // from template.php
+              var hp = Player.getHP();
               // Only attempt fetching WL key if we are alive. Otherwise, there
               // is no WL link and no key for us to fetch.
               if (hp > 0) {
@@ -1188,7 +1209,7 @@ registerFunction(function addAlertPreview() {
  * FEATURE: Select to do as many jobs as your current energy allows by default.
  */
 registerFunction(function autoSelectMaxJobs() {
-  var energy = parseInt($("#turnbox").text().replace(/\,/g,''));
+  var energy = Player.getEnergy();
   var energy_cost = parseInt($("tr:contains('Energy Cost') font.text").text());
   var max_jobs = Math.floor(energy/energy_cost);
 
