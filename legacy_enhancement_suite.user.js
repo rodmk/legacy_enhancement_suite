@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.39
+// @version     0.0.40
 // @grant       none
 // @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -671,8 +671,8 @@ registerFunction(function huntingCrystalImprovements() {
   //Inventory API to manipulate inventory items
   function Inventory(html) {
       this.items = getItems();
-      this.key = $(html).find('form').attr('action').match(/[a-zA-Z]+$/g).pop();
-      this.freeSpace = $(html).find('.nbaltrow:eq(1) img[id^=space]').length - $(html).find('.nbaltrow:eq(1) img[id^=item]').length;
+      this.key = html.match(/csrf.*?\'(.*)(?=\')/).pop()
+      this.freeSpace = $(html).find('.itemgrid:not(.equipped) td:not(:has(.item,.itemWeapon,.itemArmor,.itemMisc))').length;
       var key = this.key;
       //Inventory items encapsulated to organise data
       function Item(name, slot, trades, id) {
@@ -711,8 +711,9 @@ registerFunction(function huntingCrystalImprovements() {
           $(html).find('img.item').each(function() {
               var slot = parseInt($(this).attr('name'));
               var dat = itemPreviews[slot].replace("Un-tradable", "0 Trade").match(/(\d+)(?=(&c=|\sTrade))/g);
-              tempItems.push(new Item($(this).attr('title'), slot, dat[0], dat[1]));
+              tempItems.push(new Item($(this).attr('title'), slot, dat[2], dat[1]));
           });
+          console.log(tempItems)
           return tempItems;
       }
 
@@ -947,10 +948,15 @@ registerFunction(function huntingCrystalImprovements() {
   function invMerge() {
       //Call current inventory as instance of inventory object defined above for managing crystals
       var inv = new Inventory(document.body.innerHTML);
+      var mergeForm = create('form',{method:'post'},false,document.body);
+      var formInput = create("input", {
+          type: "hidden",
+          name: "item",
+      }, false, mergeForm);
       $('img[title*=" Crystal"]').each(function() {
           //Build selectbox containing matching crystal options & merge button
           var slot = $(this).attr('name');
-          var row = create('tr', {}, false, false);
+          var row = create('tr', {} , false, false);
           var col1 = create('td', {
               colspan: '2'
           }, false, row);
@@ -958,16 +964,15 @@ registerFunction(function huntingCrystalImprovements() {
               name: 'item',
               id: 'crystalSelect',
               class: 'selectbox',
-              style: 'width:100%;'
+              style: 'width:75%;'
           }, false, col1);
-          var col2 = create('td', {}, false, row);
           var merge = create('input', {
               id: 'merge',
               type: 'button',
               class: 'button',
-              style: 'width:100%',
+              style: 'width:23%',
               value: 'Merge'
-          }, false, col2);
+          }, false, col1);
           var crystal = inv.getCrystals().reduce(function(a, b) {
               return b.slot == slot ? b : a;
           }, null);
@@ -986,20 +991,14 @@ registerFunction(function huntingCrystalImprovements() {
           select.selectedIndex = 0;
           //Add selectbox & button after crystal is selected in inventory
           $(this).click(function() {
-              $('#ItemPreview tbody tbody:contains("Use")').append(row);
+              $('#ItemPreview tbody').append(row);
           });
           //Merging!
           $(merge).click(function() {
               //Re-create 'crystal to be merged' input as child of form
-              create("input", {
-                  type: "hidden",
-                  name: "item",
-                  value: select.selectedOptions[0].value
-              }, false, document.getElementsByTagName('form')[0]);
-              //remove unneeded Save Changes input
-              $('[name=itemarray]').remove();
-              //Override Save Changes form for with merging url
-              $('form').attr('action', 'inventory10.php?i=' + crystal.slot + '&key=' + inv.key).submit();
+              formInput.value = select.selectedOptions[0].value
+              mergeForm.action = 'inventory10.php?i=' + crystal.slot + '&key=' + inv.key;
+              mergeForm.submit();
           });
       });
   }
