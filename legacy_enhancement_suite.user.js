@@ -713,7 +713,6 @@ registerFunction(function huntingCrystalImprovements() {
               var dat = itemPreviews[slot].replace("Un-tradable", "0 Trade").match(/(\d+)(?=(&c=|\sTrade))/g);
               tempItems.push(new Item($(this).attr('title'), slot, dat[2], dat[1]));
           });
-          console.log(tempItems)
           return tempItems;
       }
 
