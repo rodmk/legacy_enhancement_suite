@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.42
+// @version     0.0.41
 // @grant       none
 // @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -815,9 +815,7 @@ registerFunction(function huntingCrystalImprovements() {
   /****************************************************/
   function huntMerge() {
     //Once a crystal drop has been detected
-    var block = true,
-      drop = false,
-      loader;
+    var block = true,drop = false,loader;
 
     function checkDrop() {
       //Display 'found match' message on single line row
@@ -853,14 +851,12 @@ registerFunction(function huntingCrystalImprovements() {
         beforeSend: function() {
           loader.start();
         },
-        complete: function() {
-          loader.stop();
-        },
         success: function(data) {
           var inv = new Inventory(data);
           $('#invSpace').text(inv.freeSpace);
           var drop = inv.getCrystals()[0];
           option(drop, inv.matchCrystal(drop));
+          loader.stop();
           //recursive method - if crystal match, display option to merge - if merged, display result
           //if crystal match with previous result, offer to match again, etc
           function option(crystal, matches) {
@@ -873,12 +869,12 @@ registerFunction(function huntingCrystalImprovements() {
                 crystal.merge(matches[0],
                   //anonymous function as input for merge callback to display merge option on previously merged crystal
                   function(data) {
-                    loader.stop();
                     var nextInv = new Inventory(data);
                     $('#invSpace').text(nextInv.freeSpace);
                     var newCrystal = nextInv.getCrystals()[0];
                     doubleRow(newCrystal);
                     option(newCrystal, nextInv.matchCrystal(newCrystal));
+                    loader.stop();
                   }
                 );
               });
@@ -909,22 +905,18 @@ registerFunction(function huntingCrystalImprovements() {
           disabled: "disabled"
         }, false, newCell),
         newRow = create("tr", {}, false, false);
-      create("img", {
-        id: "loader",
-        src: loaderAnim,
-        style: 'position:absolute;top:0px;right:0px;display:none'
-      }, false, newCell);
-      loader = {
-        start: function() {
-          block = true;
-          newButt.disabled = true;
-          $('#loader').show();
-        },
-        stop: function() {
-          block = false;
-          newButt.disabled = !($('input[name=attackstring]').length);
-          $('#loader').hide();
-        }
+        create("img",{id:"loader",src:loaderAnim,style:'position:absolute;top:0px;right:0px;display:none'},false,newCell);
+        loader =  {
+            start : function(){
+              block = true;
+              newButt.disabled = true;
+              $('#loader').show();
+            },
+            stop : function(){
+              block = false;
+              newButt.disabled = !($('input[name=attackstring]').length);
+              $('#loader').hide();
+            }
       };
       create("td", {
         class: "standardrow",
@@ -983,14 +975,12 @@ registerFunction(function huntingCrystalImprovements() {
         $.ajax({
           url: 'inventory.php?m=0',
           async: true,
-          beforeSend: function() {
+          beforeSend: function(){
             loader.start();
-          },
-          complete: function() {
-            loader.stop();
           },
           success: function(data) {
             $('#invSpace').text((new Inventory(data)).freeSpace);
+            loader.stop();
           }
         });
       }
