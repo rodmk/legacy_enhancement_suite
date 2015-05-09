@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.41
+// @version     0.0.43
 // @grant       none
 // @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -99,7 +99,7 @@ function executeFunctions() {
 $(document).ready(executeFunctions);
 
 // =============================================================================
-//                              Player Class Helper                             
+//                              Player Class Helper
 // =============================================================================
 var Player = {
   getHP: function() {
