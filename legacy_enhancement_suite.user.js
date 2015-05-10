@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.43
+// @version     0.0.44
 // @grant       none
 // @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -359,10 +359,21 @@ registerFunction(function addDeleteMessageConfirm() {
 // =============================================================================
 //                                  Market
 // =============================================================================
-registerFunction(function setUpStand() {
-  // FEATURE: Remove 'none' items from selector.
-  $(".selectbox option:contains('None')").remove();
+registerFunction(function setUpStandAndStorage() {
+  // FEATURE: Auto-check add all items with the same price by default.
+  $('input[name="multi"]').prop('checked', true);
 
+  // FEATURE: Bind 'a' to 'add item' button.
+  Mousetrap.bind('a', _.once(function() {
+    var add_btn = $('input[value="Add Item"][value="Store Item"]');
+    add_btn.click();
+  }));
+
+  // FEATURE: Maintain scroll position after taking item from stand.
+  preserveScrollPosOnClick($('a:contains("Take One")'));
+}, ["market3.php", "market6.php"]);
+
+registerFunction(function autoUpdateStandPricing() {
   // FEATURE: When selecting items from your inventory, if you already have that
   // item in your stand, copy over the price/currency for it.
   var item_selector = $('select[name="item"]');
@@ -389,27 +400,7 @@ registerFunction(function setUpStand() {
     $('input[select="currency"]').val(currency === 'c' ? 1 : 2);
   });
   item_selector.change();
-
-  // FEATURE: Auto-check add all items with the same price by default.
-  $('input[name="multi"]').prop('checked', true);
-
-  // FEATURE: Bind 'a' to 'add item' button.
-  Mousetrap.bind('a', _.once(function() {
-    var add_btn = $('input[value="Add Item"]');
-    add_btn.click();
-  }));
-
-  // FEATURE: Maintain scroll position after taking item from stand.
-  preserveScrollPosOnClick($('a:contains("Take One")'));
 }, ["market3.php"]);
-
-registerFunction(function setUpStorage() {
-  // FEATURE: Remove null options from drop down.
-  $(".selectbox option:contains('None')").remove();
-
-  // FEATURE: Maintain scroll position after taking item from storage.
-  preserveScrollPosOnClick($('a:contains("Take One")'));
-}, ["market6.php"]);
 
 /**
  * Function to preserve scroll position on refresh after clicking on a link on

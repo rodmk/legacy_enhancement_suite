@@ -40,7 +40,6 @@ Features
 ### Market
 - You can now hover over Items searched to view it's details as a tooltip.
  - Has the potential to return wrong data; check before purchasing.
-- When viewing your own stand/storage, 'None's are removed from the item-selection box.
 - In the event you are adding an Item that is already found in your stand, the price field will be automatically filled to fit the existing price.
 - Binds the "A" key on your keyboard to add the selected item to your stand.
 As long as you are not in a text box and press "A", the item will be added to the stand; provided the price field is not invalid.
