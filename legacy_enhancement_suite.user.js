@@ -117,6 +117,16 @@ var Player = {
     }
     return energy;
   },
+
+  isInWL: function() {
+    // Check character bg to see if we're in the WL or not.
+    var char_bg = $('div.char-bg');
+    var in_wl = false;
+    if (char_bg.length > 0) {
+      in_wl = char_bg.css('background-image').indexOf('char_bg_waste') > -1;
+    }
+    return in_wl;
+  }
 };
 
 // =============================================================================
@@ -200,11 +210,15 @@ function getHospitalKey() {
  * Heals the player fully via hospital/sanctuary
  */
 function fullHeal() {
-  var uri = URI("/hospital.php")
-    .query({
-      m: 1,
-      key: getHospitalKey()
-    });
+  // Skip attempting to heal if we're in the WL.
+  if (Player.isInWL()) {
+    return;
+  }
+
+  var uri = URI("/hospital.php").query({
+    m: 1,
+    key: getHospitalKey()
+  });
   $.get(uri.href());
 }
 
@@ -1164,18 +1178,8 @@ registerFunction(function wlMapCoOrds() {
  */
 registerFunction(function addWLExitQuickLink() {
   $('div.sidebox a[href="map.php"]').each(function() {
-    // Check character bg to see if we're in the WL or not.
-    var char_bg = $('div.char-bg');
-    var in_wl;
-    if (char_bg.length > 0) {
-      in_wl = char_bg.css('background-image').indexOf('char_bg_waste') > -1;
-    } else {
-      // If we don't have character bg available to us, always show the link.
-      in_wl = true;
-    }
-
     var link;
-    if (in_wl) {
+    if (Player.isInWL()) {
       link = $('<a>', {
         text: ' (Exit)',
         href: URI("/map.php").query({
