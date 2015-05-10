@@ -1137,7 +1137,8 @@ registerFunction(function huntingCrystalImprovements() {
       invMerge();
       break;
     case '/hunting3.php':
-      huntMerge();
+      if(location.search=='')
+        huntMerge();
       break;
     case '/hunting.php':
       showDrops();
