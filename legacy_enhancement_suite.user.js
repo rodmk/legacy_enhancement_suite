@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.44
+// @version     0.0.45
 // @grant       none
 // @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -379,7 +379,7 @@ registerFunction(function setUpStandAndStorage() {
 
   // FEATURE: Bind 'a' to 'add item' button.
   Mousetrap.bind('a', _.once(function() {
-    var add_btn = $('input[value="Add Item"][value="Store Item"]');
+    var add_btn = $('input[value="Add Item"], input[value="Store Item"]');
     add_btn.click();
   }));
 
