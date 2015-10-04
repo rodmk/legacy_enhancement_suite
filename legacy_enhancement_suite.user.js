@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.45
+// @version     0.0.46
 // @grant       none
 // @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -747,7 +747,7 @@ registerFunction(function huntingCrystalImprovements() {
       //Each resulting index corresponds to the slot in inventory
       var itemPreviews = html.match(/(itemPreviews\[)((.|\n)*?)(Default|table>');/g);
       var tempItems = [];
-      $(html).find('img.item').each(function() {
+      $(html).find('img.itemicon').each(function() {
         var slot = parseInt($(this).attr('name'));
         var dat = itemPreviews[slot].replace("Un-tradable", "0 Trade").match(/(\d+)(?=(&c=|\sTrade))/g);
         tempItems.push(new Item($(this).attr('title'), slot, dat[2], dat[1]));
