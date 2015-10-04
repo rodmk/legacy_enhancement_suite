@@ -747,7 +747,7 @@ registerFunction(function huntingCrystalImprovements() {
       //Each resulting index corresponds to the slot in inventory
       var itemPreviews = html.match(/(itemPreviews\[)((.|\n)*?)(Default|table>');/g);
       var tempItems = [];
-      $(html).find('img.itemicon').each(function() {
+      $(html).find('img.item').each(function() {
         var slot = parseInt($(this).attr('name'));
         var dat = itemPreviews[slot].replace("Un-tradable", "0 Trade").match(/(\d+)(?=(&c=|\sTrade))/g);
         tempItems.push(new Item($(this).attr('title'), slot, dat[2], dat[1]));
