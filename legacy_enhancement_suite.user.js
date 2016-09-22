@@ -26,9 +26,9 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.46
+// @version     0.0.48
 // @grant       none
-// @require     https://github.com/nnnick/Chart.js/raw/master/Chart.min.js
+// @require     https://raw.githubusercontent.com/nnnick/Chart.js/4aa274d5b2c82e28f7a7b2bb78db23b0429255a1/Chart.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js
 // @require     https://raw.githubusercontent.com/rodmk/locache/master/locache.js
@@ -711,7 +711,7 @@ registerFunction(function huntingCrystalImprovements() {
   function Inventory(html) {
     this.items = getItems();
     this.key = html.match(/csrf.*?\'(.*)(?=\')/).pop();
-    this.freeSpace = $(html).find('.itemgrid:not(.equipped) td:not(:has(.item,.itemWeapon,.itemArmor,.itemMisc))').length;
+    this.freeSpace = $(html).find('.itemgrid:not(.equipped) td:not(:has(img))').length;
     var key = this.key;
     //Inventory items encapsulated to organise data
     function Item(name, slot, trades, id) {
