@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.48
+// @version     0.0.49
 // @grant       none
 // @require     https://raw.githubusercontent.com/nnnick/Chart.js/4aa274d5b2c82e28f7a7b2bb78db23b0429255a1/Chart.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -133,56 +133,6 @@ var Player = {
 //                               General Layout
 // =============================================================================
 /**
- * FEATURE: Add some helpful links to elements of the character/stats boxes.
- */
-registerFunction(function addStatBoxLinks() {
-  // Linkify character box elements.
-  var character_image = $('div.aura');
-  character_image.wrapInner($('<a/>').attr('href', '/design.php'));
-
-  var character_level = $('div.levelbox');
-  character_level.wrapInner($('<a/>').attr('href', '/points.php'));
-
-  var flag = $('img.flag');
-  flag.wrap($('<a/>').attr('href', '/flag.php'));
-
-  // Linkify stats box stats to relevant places in the game.
-  var player_level = parseInt($('.levelbox').text());
-  var link_map = {
-    'Energy': player_level >= 80 ? '/avatarjob.php' : '/jobcenter.php',
-    'Credits': '/bank.php',
-    'Tokens': '/casino.php',
-  };
-
-  $.each(link_map, function(row, href) {
-    var target_cell = $("tr td.game-left:contains('" + row + "')").next();
-    var id = target_cell.attr('id');
-    target_cell.removeAttr('id');
-    target_cell.wrapInner($('<a/>').attr({
-      'href': href,
-      'id': id
-    }));
-  });
-}, [".*"]);
-
-/**
- * FEATURE: If there's a quick link to hospital/sanctuary of healing, adds a
- * 'heal' link (actually an ajax call) right next to it.
- */
-registerFunction(function addQuickHealLink() {
-  var hospital_node = $('a[href="hospital.php"]');
-  var heal_me_link = $('<a>', {
-    text: ' (Heal)',
-    href: '#'
-  });
-  heal_me_link.click(function() {
-    fullHeal();
-    return false;
-  });
-  hospital_node.after(heal_me_link);
-}, [".*"]);
-
-/**
  * FEATURE: Binds 'h' to full heal.
  */
 registerFunction(function addQuickHealKeybinding() {
@@ -230,47 +180,27 @@ registerFunction(function addItemHovercards() {
     var equipData;
     $(this)
       .mouseover(function() {
+        var context = $(this)
         if (!equipData) {
+            equipData = "<img src=\""+loaderAnim+"\" />";
+            ddrivetip(equipData, 30);
           $.ajax({
             url: $(this).attr('href').match(/'(.*)'/).pop(),
-            async: false,
+            async: true,
             success: function(data) {
               equipData = $('center', data).html();
+              if(context.is(":hover"))
+                ddrivetip(equipData,450);
             }
           });
         }
-        ddrivetip(equipData, 450);
+        else{
+            ddrivetip(equipData, 450);
+        }
       })
       .mouseout(hideddrivetip);
   });
 }, ["profile.php", "market2.php", "market3.php", "market6.php"]);
-
-/**
- * FEATURE: Adds an exclamation icon next to the fighting tab if the special
- * NPC hunt timer is up.
- */
-registerFunction(function addSpecialHuntNotification() {
-  var next_hunt_time = getNextSpecialHuntTime();
-  if (Date.now() >= next_hunt_time) {
-    var fighting_tab = $('img[alt="Fighting"]');
-    var exclamation;
-    exclamation = fontAwesomeIcon('fa-exclamation-circle').css({
-      'float': 'left',
-      'left': '8px',
-      'position': 'relative',
-      'top': '5px',
-    });
-    fighting_tab.after(exclamation);
-
-    var hunting_link = $(':contains("NPC Hunting"):last');
-    exclamation = fontAwesomeIcon('fa-exclamation-circle').css({
-      'float': 'right',
-      'position': 'relative',
-      'right': '3px',
-    });
-    hunting_link.append(exclamation);
-  }
-}, [".*"]);
 
 /**
  * Fetches the earliest time (unixtime, in ms) one can hunt a special NPC.
@@ -321,26 +251,6 @@ function getNextSpecialHuntTime() {
 
   return next_hunt_time;
 }
-
-// =============================================================================
-//                                Profiles
-// =============================================================================
-/**
- * Various profile page tweaks.
- */
-registerFunction(function setUpProfile() {
-  // FEATURE: Format exp counts to include commas.
-  $('img[title*="Exp :"]').each(function() {
-    $(this)
-      .attr('title', numberWithCommas($(this).attr('title')))
-      .attr('alt', $(this).attr('title'));
-  });
-
-  // FEATURE: Format player honors points to include commas.
-  $('.maintable:contains("Player Honors") .darktext').each(function() {
-    $(this).text(numberWithCommas($(this).text()));
-  });
-}, ["profile.php"]);
 
 // =============================================================================
 //                                Messages
@@ -1174,57 +1084,6 @@ registerFunction(function wlMapCoOrds() {
     .mouseout(hideddrivetip);
 }, ['map.php']);
 
-/**
- * FEATURE: Adds wl 'exit' link to wasteland quicklink.
- */
-registerFunction(function addWLExitQuickLink() {
-  $('div.sidebox a[href="map.php"]').each(function() {
-    var link;
-    if (Player.isInWL()) {
-      link = $('<a>', {
-        text: ' (Exit)',
-        href: URI("/map.php").query({
-          'move': 1
-        }),
-      });
-    } else {
-      link = $('<a>', {
-        text: ' (Enter)',
-        href: '#',
-        click: function() {
-          var key = cachedFetchWithRefresh(
-            'wasteland:entry_key',
-            SEC_IN_DAY,
-            '/map.php',
-            function(data) {
-              var hp = Player.getHP();
-              // Only attempt fetching WL key if we are alive. Otherwise, there
-              // is no WL link and no key for us to fetch.
-              if (hp > 0) {
-                var wl_link = $(data).find("#enter-wasteland").prop('href');
-                if (wl_link) {
-                  var wl_key = URI(wl_link).query(true).key;
-                  return wl_key;
-                }
-              }
-            }
-          );
-
-          if (key) {
-            var uri = URI("/map2.php").query({
-              'c': 'hq',
-              'join': 1,
-              'key': key
-            });
-            location.href = uri.href();
-          }
-        }
-      });
-    }
-
-    $(this).after(link);
-  });
-}, [".*"]);
 
 /**
  * FEATURE: Adds a 3x3 hovercard preview to gang alerts.
@@ -1350,55 +1209,6 @@ registerFunction(function formatRemainingBoostTime() {
   });
 }, ["platinum_store.php"]);
 
-// =============================================================================
-//                                 Vote Page
-// =============================================================================
-/**
- * FEATURE: Adds an exclamation icon next to the community tab if the top list
- * vote timers are up.
- */
-registerFunction(function addVoteNotification() {
-  function getCanVote() {
-    // Server time is EST (UTC -5). Vote timer resets at 0500 and 1700 UTC.
-    // Thus, we set our cache timer to expire at around server reset.
-    var date = new Date();
-    var hrs_until_reset = 12 - mod(date.getUTCHours() + SERVER_UTC_OFFSET_HRS, 12);
-    var sec_until_reset =
-      (hrs_until_reset * SEC_IN_HOUR) -
-      (date.getUTCMinutes() * SEC_IN_MINUTE) -
-      (date.getUTCSeconds()) +
-      5 * SEC_IN_MINUTE; // add a bit of a buffer just in case
-
-    return cachedFetchWithRefresh(
-      "voting:canvote",
-      sec_until_reset,
-      "/voting.php",
-      function(data) {
-        return $('b:contains("Not Voted")', data).length > 0;
-      }
-    );
-  }
-
-  if (getCanVote()) {
-    var community_tab = $('img[alt="Community"]');
-    var exclamation;
-    exclamation = fontAwesomeIcon('fa-exclamation-circle').css({
-      'float': 'left',
-      'left': '5px',
-      'position': 'relative',
-      'top': '5px',
-    });
-    community_tab.after(exclamation);
-
-    var vote_link = $(':contains("Vote for Legacy"):last');
-    exclamation = fontAwesomeIcon('fa-exclamation-circle').css({
-      'float': 'right',
-      'position': 'relative',
-      'right': '3px',
-    });
-    vote_link.append(exclamation);
-  }
-}, ['.*']);
 
 // =============================================================================
 //                                   Flags
@@ -1808,16 +1618,6 @@ function fontAwesomeIcon(klass) {
 
 function mod(n, m) {
   return ((n % m) + m) % m;
-}
-
-/**
- * Formats a number to have comma separators (e.g. 1234567 -> 1,234,567).
- * @source http://stackoverflow.com/a/2901298
- */
-function numberWithCommas(x) {
-  var parts = x.toString().split(".");
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return parts.join(".");
 }
 
 /**
