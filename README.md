@@ -15,27 +15,12 @@ Installation Instructions
 
 Features
 --------
-### General Layout
-- Adds links to the following:
- - Character image to character design page.
- - Level box to stat point allocation page.
- - Player flag to flag editor.
- - Energy count to Job Center or Observatory depending on level.
- - Credits count to Bank.
- - Tokens count to Casino.
-
 ### Healing
-- If "Hospital" is a Quick Link, a new "(Heal)" link is created beside it.
- - *This link is essentially a full heal.
- - *Sanctuary of Healing will not have the same effect; the Quick Link is too long.
 - Binds the "H" key on your keyboard to a full heal.
  - As long as you are not in a text box and press "H", you will make a full heal.
- - *Makes the above kind of redundant, but it's there if you like clicking.
 
 ### Player Profile
 - You can now hover over Items in Players' Profiles to view it's details as a tool-tip.
-- Player EXP when hovered over now has "," for easier viewing.
-- The weekly points earned in the "Honor" Tab in Players' Profiles now has "," for easier viewing.
 
 ### Market
 - You can now hover over Items searched to view it's details as a tooltip.
@@ -62,16 +47,12 @@ As long as you are not in a text box and press "A", the item will be added to th
 ### Platinum Market
 - All timers that show how long a Boost remains unlocked is now shown in months, weeks, days and hours instead of just hours.
 
-### Voting
-- A "!" will appear next to the "Community" Tab if you are able to Vote.
-
 ### Flags
 - You can now upload Flags.
  - Images are converted automatically.
  - You can choose which part of the image is to be converted to the Flag.
 
 ### Hunting
-- A "!" will appear next to the "Hunting" Tab if you are able to hunt a Special NPC.
 - Allows the player to Hunt the same Hunting Group on the same page as the final hit that results in victory.
 - Allows the player to combine a Crystal that just dropped with another if found in your Inventory.
 - Shows remaining inventory spaces left after hunting.
@@ -79,7 +60,6 @@ As long as you are not in a text box and press "A", the item will be added to th
 
 ### Wastelands
 - You can now hover over specific Squares to view it's coordinates as a tooltip.
-- If "Wastelands" is a Quick Link, new "(Enter)" or "(Exit)" links are created beside it, depending on whether you're outside or inside the wasteland, respectively. This link lets you quickly enter/exit the wasteland. *Note: This functionality requires your character portrait to be visible to work.*
 - Hovering over a Gang Alert now shows a 3x3 grid of the area that was Alerted.
 
 ### Combat
