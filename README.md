@@ -44,9 +44,6 @@ As long as you are not in a text box and press "A", the item will be added to th
 ### Jobs
 - Automatically selects the maximum amount of times you can work with your current turns.
 
-### Platinum Market
-- All timers that show how long a Boost remains unlocked is now shown in months, weeks, days and hours instead of just hours.
-
 ### Flags
 - You can now upload Flags.
  - Images are converted automatically.

@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.49
+// @version     0.0.50
 // @grant       none
 // @require     https://raw.githubusercontent.com/nnnick/Chart.js/4aa274d5b2c82e28f7a7b2bb78db23b0429255a1/Chart.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -1160,54 +1160,6 @@ registerFunction(function autoSelectMaxJobs() {
     }
   });
 }, ["jobcenter2.php", "avatarjob2.php"]);
-
-
-// =============================================================================
-//                               Platinum Store
-// =============================================================================
-/**
- * FEATURE: Formats remaining boost time to a saner format.
- */
-registerFunction(function formatRemainingBoostTime() {
-  function formatTime(hours) {
-    hours = parseInt(hours, 10);
-    var out = [];
-    switch (true) {
-      case (hours >= 8736):
-        var years = Math.floor(hours / (8736));
-        out.push(years + " year" + (years > 1 ? "s" : ""));
-        hours = hours % (8736);
-        /* falls through */
-      case (hours >= 168):
-        var weeks = Math.floor(hours / (168));
-        out.push(weeks + " week" + (weeks > 1 ? "s" : ""));
-        hours = hours % (168);
-        /* falls through */
-      case (hours >= 24):
-        var days = Math.floor(hours / (24));
-        out.push(days + " day" + (days > 1 ? "s" : ""));
-        hours = hours % 24;
-        /* falls through */
-      case (hours > 0):
-        out.push(hours + " hour" + (hours > 1 ? "s" : ""));
-        /* falls through */
-      default:
-        var str = out.join(", ");
-        return str;
-    }
-  }
-
-  $('img[alt*=Boost][onmouseover]').each(function() {
-    var regex = /\d{1,} hour\(s\)/;
-    var time = $(this).attr('onmouseover').match(regex);
-    if (time) {
-      $(this).attr(
-        'onmouseover',
-        $(this).attr('onmouseover').replace(regex, formatTime(time))
-      );
-    }
-  });
-}, ["platinum_store.php"]);
 
 
 // =============================================================================
