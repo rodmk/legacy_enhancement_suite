@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.52
+// @version     0.0.53
 // @grant       none
 // @require     https://raw.githubusercontent.com/nnnick/Chart.js/4aa274d5b2c82e28f7a7b2bb78db23b0429255a1/Chart.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -1061,31 +1061,6 @@ registerFunction(function huntingCrystalImprovements() {
 // =============================================================================
 //                               Wasteland
 // =============================================================================
-/**
- * FEATURE: Adds mouse tooltip showing coordinates to wl map.
- */
-registerFunction(function wlMapCoOrds() {
-  var coords = $('<div><div style="text-align:center;">1,1</div></div>');
-  $('#overlay2')
-    .mousemove(function(e) {
-      // Firefox doesn't implement offsetX/Y, so compute it ourselves if needed.
-      var offX = (e.offsetX || e.clientX - $(e.target).offset().left + window.pageXOffset);
-      var offY = (e.offsetY || e.clientY - $(e.target).offset().top + window.pageYOffset);
-      var x = Math.ceil(offX / 33);
-      var y = Math.ceil((offY - 5) / 33); // top is 5px off
-
-      if (x >= 1 && x <= 15 && y >= 1 && y <= 15) {
-        coords.children().text(x + ',' + y);
-        ddrivetip(coords.html(), 35);
-      } else {
-        // Hide tooltip when out of bounds
-        hideddrivetip();
-      }
-    })
-    .mouseout(hideddrivetip);
-}, ['map.php']);
-
-
 /**
  * FEATURE: Adds a 3x3 hovercard preview to gang alerts.
  */

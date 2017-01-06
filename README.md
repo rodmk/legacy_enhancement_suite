@@ -56,7 +56,6 @@ As long as you are not in a text box and press "A", the item will be added to th
 - Tracks drops by hunting groups and shows drops and drop rates in the hunting page.
 
 ### Wastelands
-- You can now hover over specific Squares to view it's coordinates as a tooltip.
 - Hovering over a Gang Alert now shows a 3x3 grid of the area that was Alerted.
 
 ### Combat
