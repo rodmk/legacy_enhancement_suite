@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.53
+// @version     0.0.54
 // @grant       none
 // @require     https://raw.githubusercontent.com/nnnick/Chart.js/4aa274d5b2c82e28f7a7b2bb78db23b0429255a1/Chart.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -657,9 +657,13 @@ registerFunction(function huntingCrystalImprovements() {
       //Each resulting index corresponds to the slot in inventory
       var itemPreviews = html.match(/(itemPreviews\[)((.|\n)*?)(Default|table>');/g);
       var tempItems = [];
-      $(html).find('img.itemicon').each(function() {
+      var panels = $(html).find('.panel');
+      var inven = panels.splice(-2);
+      var buffer = $(panels[1]).find('img.itemicon').length;
+      $(inven).find('img.itemicon').each(function() {
         var slot = parseInt($(this).attr('name'));
-        var dat = itemPreviews[slot].replace("Un-tradable", "0 Trade").match(/(\d+)(?=(&c=|\sTrade))/g);
+          //console.log(slot,$(this).attr('title'),buffer+slot)
+        var dat = itemPreviews[buffer+slot].replace("Un-tradable", "0 Trade").match(/(\d+)(?=(&c=|\sTrade))/g);
         tempItems.push(new Item($(this).attr('title'), slot, dat[2], dat[1]));
       });
       return tempItems;
