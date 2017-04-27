@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.54
+// @version     0.0.55
 // @grant       none
 // @require     https://raw.githubusercontent.com/nnnick/Chart.js/4aa274d5b2c82e28f7a7b2bb78db23b0429255a1/Chart.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -308,13 +308,14 @@ registerFunction(function autoUpdateStandPricing() {
     }
 
     var price_text = $("font.darktext > font:contains('" + selected_item + "')")
+      .filter(function() { return $(this).text() === selected_item; })
       .closest('tbody')
       .find("font:contains('each')");
     var num, currency;
     if (price_text.size()) {
       price_text = $.trim(price_text.first().text());
-      var match = price_text.match(/(\d+)([cp]) each/);
-      num = match[1];
+      var match = price_text.match(/([\d,]+)([cp]) each/);
+      num = match[1].replace(/,/g, '');
       currency = match[2];
     } else {
       num = null;
