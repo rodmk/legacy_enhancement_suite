@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.55
+// @version     0.0.56
 // @grant       none
 // @require     https://raw.githubusercontent.com/nnnick/Chart.js/4aa274d5b2c82e28f7a7b2bb78db23b0429255a1/Chart.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -621,7 +621,7 @@ registerFunction(function huntingCrystalImprovements() {
   //Inventory API to manipulate inventory items
   function Inventory(html) {
     this.items = getItems();
-    this.key = html.match(/csrf.*?\'(.*)(?=\')/).pop();
+    this.key = html.match(/key=(\w{10})/).pop();
     this.freeSpace = $(html).find('.itemgrid:not(.equipped) td:not(:has(img))').length;
     var key = this.key;
     //Inventory items encapsulated to organise data
@@ -630,7 +630,6 @@ registerFunction(function huntingCrystalImprovements() {
       this.slot = slot;
       this.trades = trades;
       this.id = id;
-
       //Crystal merging method
       this.merge = function(that, callback) {
         var slot1 = this.slot;
@@ -656,16 +655,17 @@ registerFunction(function huntingCrystalImprovements() {
     function getItems() {
       //Match javascript lines on inventory.php for item id & trades
       //Each resulting index corresponds to the slot in inventory
-      var itemPreviews = html.match(/(itemPreviews\[)((.|\n)*?)(Default|table>');/g);
+      //var itemPreviews = html.match(/(itemPreviews\[)((.|\n)*?)(Default|table>');/g);
       var tempItems = [];
       var panels = $(html).find('.panel');
       var inven = panels.splice(-2);
-      var buffer = $(panels[1]).find('img.itemicon').length;
+      //var buffer = $(panels[1]).find('img.itemicon').length;
       $(inven).find('img.itemicon').each(function() {
         var slot = parseInt($(this).attr('name'));
+        var itemID = $(this).attr('id').split('|')
           //console.log(slot,$(this).attr('title'),buffer+slot)
-        var dat = itemPreviews[buffer+slot].replace("Un-tradable", "0 Trade").match(/(\d+)(?=(&c=|\sTrade))/g);
-        tempItems.push(new Item($(this).attr('title'), slot, dat[2], dat[1]));
+        //var dat = itemPreviews[buffer+slot].replace("Un-tradable", "0 Trade").match(/(\d+)(?=(&c=|\sTrade))/g);
+        tempItems.push(new Item(itemID[0], slot, 99999, itemID[1]));
       });
       return tempItems;
     }
@@ -747,7 +747,7 @@ registerFunction(function huntingCrystalImprovements() {
             align: "center",
             colspan: "2"
           },
-          'You have a matching ' + crystal.name + ' (' + crystal.trades + 't) in your inventory. <span class="merge" style="cursor:pointer;">[Merge]</span>',
+          'You have a matching ' + crystal.name + ' in your inventory. <span class="merge" style="cursor:pointer;">[Merge]</span>',
           r);
       }
 
@@ -775,6 +775,7 @@ registerFunction(function huntingCrystalImprovements() {
           var inv = new Inventory(data);
           $('#invSpace').text(inv.freeSpace);
           var drop = inv.getCrystals()[0];
+          //console.log(drop)
           option(drop, inv.matchCrystal(drop));
           loader.stop();
           //recursive method - if crystal match, display option to merge - if merged, display result
@@ -943,10 +944,15 @@ registerFunction(function huntingCrystalImprovements() {
       type: "hidden",
       name: "item",
     }, false, mergeForm);
+    $('.itemicon').click(function(){
+    	$('#mergeRow').remove();
+    })
     $('img[title*=" Crystal"]').each(function() {
       //Build selectbox containing matching crystal options & merge button
       var slot = $(this).attr('name');
-      var row = create('tr', {}, false, false);
+      var row = create('tr', {
+      	id: 'mergeRow'
+      }, false, false);
       var col1 = create('td', {
         colspan: '2'
       }, false, row);
@@ -971,7 +977,8 @@ registerFunction(function huntingCrystalImprovements() {
         matches.forEach(function(a) {
           create('option', {
             value: a.slot
-          }, a.trades + ' Trades | ID:' + a.id, select);
+          //}, a.trades + ' Trades | ID:' + a.id, select);
+          }, 'Slot #'+a.slot +' | ID:' + a.id, select);
         });
       } else {
         create('option', {}, 'No Matching Crystals', select);
@@ -981,7 +988,7 @@ registerFunction(function huntingCrystalImprovements() {
       select.selectedIndex = 0;
       //Add selectbox & button after crystal is selected in inventory
       $(this).click(function() {
-        $('#ItemPreview tbody').append(row);
+      	$('#itemPreview tbody').append(row)
       });
       //Merging!
       $(merge).click(function() {
