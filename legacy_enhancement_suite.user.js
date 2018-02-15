@@ -188,7 +188,8 @@ registerFunction(function addItemHovercards() {
             url: $(this).attr('href').match(/'(.*)'/).pop(),
             async: true,
             success: function(data) {
-              equipData = $('center', data).html();
+              //equipData = $('center', data).html();
+              equipData = $(data).filter('center').html();
               if(context.is(":hover"))
                 ddrivetip(equipData,450);
             }
