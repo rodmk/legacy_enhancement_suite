@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.56
+// @version     0.0.57
 // @grant       none
 // @require     https://raw.githubusercontent.com/nnnick/Chart.js/4aa274d5b2c82e28f7a7b2bb78db23b0429255a1/Chart.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -188,7 +188,8 @@ registerFunction(function addItemHovercards() {
             url: $(this).attr('href').match(/'(.*)'/).pop(),
             async: true,
             success: function(data) {
-              equipData = $('center', data).html();
+              //equipData = $('center', data).html();
+              equipData = $(data).filter('center').html();
               if(context.is(":hover"))
                 ddrivetip(equipData,450);
             }
