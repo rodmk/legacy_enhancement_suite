@@ -311,7 +311,7 @@ registerFunction(function autoUpdateStandPricing() {
     var price_text = $("font.darktext > font:contains('" + selected_item + "')")
       .filter(function() { return $(this).text() === selected_item; })
       .closest('tbody')
-      .find("font:contains('each')");
+      .find("td:contains('each')");
     var num, currency;
     if (price_text.size()) {
       price_text = $.trim(price_text.first().text());
