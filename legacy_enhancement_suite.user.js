@@ -311,7 +311,7 @@ registerFunction(function autoUpdateStandPricing() {
     var price_text = $("font.darktext > font:contains('" + selected_item + "')")
       .filter(function() { return $(this).text() === selected_item; })
       .closest('tbody')
-      .find("font:contains('each')");
+      .find("td:contains('each')");
     var num, currency;
     if (price_text.size()) {
       price_text = $.trim(price_text.first().text());
@@ -508,10 +508,10 @@ registerFunction(function preventMultiAttack() {
   // buttons can cause multi-attack errors, so to be safe I fixed all attack
   // buttons I could find.
   /* jshint multistr:true */
-  var atk_btn = $('input[value="Attack"],\
-                   input[value="Attack Target"],\
-                   input[value="Attack Again"],\
-                   input[value="Hunt Again"]');
+  var atk_btn = $('button[value="0"],\
+                   button[value="1"],\
+                   button[value="2"],\
+                   button[value="3"]');
   atk_btn.each(function() {
     var btn = $(this);
     var disable_btn = function() {
