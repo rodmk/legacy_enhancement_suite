@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.58
+// @version     0.0.59
 // @grant       none
 // @require     https://raw.githubusercontent.com/nnnick/Chart.js/4aa274d5b2c82e28f7a7b2bb78db23b0429255a1/Chart.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -1087,7 +1087,7 @@ registerFunction(function addAlertPreview() {
     var map_uri = URI('/maps/map1_gang.png').query({
       'c': Date.now()
     });
-    var overlay_uri = URI('/maps/map1_overlay.gif').query({
+    var overlay_uri = URI('/maps/map1_overlay.png').query({
       'c': Date.now()
     });
     var map_preview = $('<img>')
@@ -1117,8 +1117,8 @@ registerFunction(function addAlertPreview() {
     return container;
   }
 
-  $('div.sidebox:contains("Gang Alert")').each(function() {
-    var attack_txt = $(this).find('div.gang-alert').text();
+  $('#combatlog > font:contains("reported")').each(function() {
+    var attack_txt = $(this).text();
     var coords = attack_txt.match(/(\d+),(\d+)/);
     var x = parseInt(coords[1]),
       y = parseInt(coords[2]);
