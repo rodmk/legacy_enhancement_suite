@@ -1087,7 +1087,7 @@ registerFunction(function addAlertPreview() {
     var map_uri = URI('/maps/map1_gang.png').query({
       'c': Date.now()
     });
-    var overlay_uri = URI('/maps/map1_overlay.gif').query({
+    var overlay_uri = URI('/maps/map1_overlay.png').query({
       'c': Date.now()
     });
     var map_preview = $('<img>')
@@ -1117,8 +1117,8 @@ registerFunction(function addAlertPreview() {
     return container;
   }
 
-  $('div.sidebox:contains("Gang Alert")').each(function() {
-    var attack_txt = $(this).find('div.gang-alert').text();
+  $('#combatlog > font:contains("reported")').each(function() {
+    var attack_txt = $(this).text();
     var coords = attack_txt.match(/(\d+),(\d+)/);
     var x = parseInt(coords[1]),
       y = parseInt(coords[2]);
