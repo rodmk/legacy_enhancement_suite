@@ -394,7 +394,6 @@ registerFunction(function addMarketSearchTooltips() {
             var item_url = match.eq(numb).attr('href').match(/'(.*)'/).pop();
             var item_data = syncGet(item_url);
             item_tooltip = $(item_data).filter('center').html();
-            // item_tooltip = $('center', item_data).html();
           } else {
             item_tooltip = 'Error - Item Cannot Be Found';
           }
