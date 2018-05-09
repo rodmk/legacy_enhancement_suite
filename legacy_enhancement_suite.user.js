@@ -394,7 +394,6 @@ registerFunction(function addMarketSearchTooltips() {
             var item_url = match.eq(numb).attr('href').match(/'(.*)'/).pop();
             var item_data = syncGet(item_url);
             item_tooltip = $(item_data).filter('center').html();
-            // item_tooltip = $('center', item_data).html();
           } else {
             item_tooltip = 'Error - Item Cannot Be Found';
           }
@@ -1133,25 +1132,6 @@ registerFunction(function addAlertPreview() {
   });
 }, [".*"]);
 
-function cachedFetchWithRefreshAs(as, timeout, path, fn) {
-  var value;
-
-  if (window.location.pathname === path) {
-    value = fn(document);
-    if (value !== undefined) {
-      cacheSet(as, value, timeout);
-      return value;
-    }
-  }
-
-  value = cachedFetch(as, timeout, function() {
-    var ret = fn(syncGet(path));
-    return ret;
-  });
-
-  return value;
-}
-
 registerFunction(function easyAttack() {
   $('a[href="map2.php"]').closest('tbody').append('\
     <tr class="standardrow" style="background-color: #000000;">\
@@ -1165,7 +1145,6 @@ registerFunction(function easyAttack() {
     </tr>\
   ');
     
-  let thing = $('#Warning').find('input[value="Attack"]');
   let check = $('table.maintable').find('font:contains("retreats")');
 
   if (check.length) {
@@ -1174,7 +1153,7 @@ registerFunction(function easyAttack() {
     $.ajax({
       beforeSend: function() {
         $('#re-attack-btn').each(function() {
-            $("<img style='display: block; margin: auto;' id='loader' src=\""+loaderAnim+"\" />");
+            $("<img style='display: block; margin: auto;' id='loader' src=\""+loaderAnim+"\" />")
               .insertBefore($(this));
             btnData = $(this).detach();
         })
