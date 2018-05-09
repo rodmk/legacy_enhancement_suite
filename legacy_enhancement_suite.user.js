@@ -1133,6 +1133,71 @@ registerFunction(function addAlertPreview() {
   });
 }, [".*"]);
 
+function cachedFetchWithRefreshAs(as, timeout, path, fn) {
+  var value;
+
+  if (window.location.pathname === path) {
+    value = fn(document);
+    if (value !== undefined) {
+      cacheSet(as, value, timeout);
+      return value;
+    }
+  }
+
+  value = cachedFetch(as, timeout, function() {
+    var ret = fn(syncGet(path));
+    return ret;
+  });
+
+  return value;
+}
+
+registerFunction(function easyAttack() {
+  $('a[href="map2.php"]').closest('tbody').append('\
+    <tr class="standardrow" style="background-color: #000000;">\
+      <td>\
+        <button\
+        style="display: block; margin-left: auto; margin-right: auto;"\
+        id="re-attack-btn" class="attackbutton" autofocus>\
+        Attack Again\
+        </button>\
+      </td>\
+    </tr>\
+  ');
+    
+  let thing = $('#Warning').find('input[value="Attack"]');
+  let check = $('table.maintable').find('font:contains("retreats")');
+
+  if (check.length) {
+    let btnData;
+
+    $.ajax({
+      beforeSend: function() {
+        $('#re-attack-btn').each(function() {
+            $("<img style='display: block; margin: auto;' id='loader' src=\""+loaderAnim+"\" />");
+              .insertBefore($(this));
+            btnData = $(this).detach();
+        })
+      },
+      url: 'map2.php',
+      success: function(data) {
+        let btn = $(data).find('input[value="Attack"]');
+
+        if (btn.length < 1) {
+          $('#loader').replaceWith('<p style="font-size: 13px; font-family: Arial; text-align: center;">Guards cleared</p>');
+        } else {
+        $(btnData).insertBefore('#loader').focus();
+        $('#loader').remove();
+            $('#re-attack-btn').click(function() {
+            $(this).prop('disabled', true);
+            $(btn).trigger('click');
+          })
+        }
+      }
+    });
+  }
+}, ["hunting3.php"]);
+
 // =============================================================================
 //                                   Jobs
 // =============================================================================
