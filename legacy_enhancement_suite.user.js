@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.58
+// @version     0.0.60
 // @grant       none
 // @require     https://raw.githubusercontent.com/nnnick/Chart.js/4aa274d5b2c82e28f7a7b2bb78db23b0429255a1/Chart.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -393,7 +393,7 @@ registerFunction(function addMarketSearchTooltips() {
             //Select the nth similar item on the market under the above attributes
             var item_url = match.eq(numb).attr('href').match(/'(.*)'/).pop();
             var item_data = syncGet(item_url);
-            item_tooltip = $('center', item_data).html();
+            item_tooltip = $(item_data).filter('center').html();
           } else {
             item_tooltip = 'Error - Item Cannot Be Found';
           }
@@ -1087,7 +1087,7 @@ registerFunction(function addAlertPreview() {
     var map_uri = URI('/maps/map1_gang.png').query({
       'c': Date.now()
     });
-    var overlay_uri = URI('/maps/map1_overlay.gif').query({
+    var overlay_uri = URI('/maps/map1_overlay.png').query({
       'c': Date.now()
     });
     var map_preview = $('<img>')
@@ -1117,8 +1117,8 @@ registerFunction(function addAlertPreview() {
     return container;
   }
 
-  $('div.sidebox:contains("Gang Alert")').each(function() {
-    var attack_txt = $(this).find('div.gang-alert').text();
+  $('#combatlog > font:contains("reported")').each(function() {
+    var attack_txt = $(this).text();
     var coords = attack_txt.match(/(\d+),(\d+)/);
     var x = parseInt(coords[1]),
       y = parseInt(coords[2]);
@@ -1131,6 +1131,51 @@ registerFunction(function addAlertPreview() {
       .mouseout(hideddrivetip);
   });
 }, [".*"]);
+
+registerFunction(function easyAttack() {
+  $('a[href="map2.php"]').closest('tbody').append('\
+    <tr class="standardrow" style="background-color: #000000;">\
+      <td>\
+        <button\
+        style="display: block; margin-left: auto; margin-right: auto;"\
+        id="re-attack-btn" class="attackbutton" autofocus>\
+        Attack Again\
+        </button>\
+      </td>\
+    </tr>\
+  ');
+    
+  let check = $('table.maintable').find('font:contains("retreats")');
+
+  if (check.length) {
+    let btnData;
+
+    $.ajax({
+      beforeSend: function() {
+        $('#re-attack-btn').each(function() {
+            $("<img style='display: block; margin: auto;' id='loader' src=\""+loaderAnim+"\" />")
+              .insertBefore($(this));
+            btnData = $(this).detach();
+        })
+      },
+      url: 'map2.php',
+      success: function(data) {
+        let btn = $(data).find('input[value="Attack"]');
+
+        if (btn.length < 1) {
+          $('#loader').replaceWith('<p style="font-size: 13px; font-family: Arial; text-align: center;">Guards cleared</p>');
+        } else {
+        $(btnData).insertBefore('#loader').focus();
+        $('#loader').remove();
+            $('#re-attack-btn').click(function() {
+            $(this).prop('disabled', true);
+            $(btn).trigger('click');
+          })
+        }
+      }
+    });
+  }
+}, ["hunting3.php"]);
 
 // =============================================================================
 //                                   Jobs
