@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @include     http://www.legacy-game.net/*
 // @include     http://dev.legacy-game.net/*
-// @version     0.0.59
+// @version     0.0.60
 // @grant       none
 // @require     https://raw.githubusercontent.com/nnnick/Chart.js/4aa274d5b2c82e28f7a7b2bb78db23b0429255a1/Chart.js
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
@@ -946,13 +946,13 @@ registerFunction(function huntingCrystalImprovements() {
       name: "item",
     }, false, mergeForm);
     $('.itemicon').click(function(){
-    	$('#mergeRow').remove();
+      $('#mergeRow').remove();
     })
     $('img[title*=" Crystal"]').each(function() {
       //Build selectbox containing matching crystal options & merge button
       var slot = $(this).attr('name');
       var row = create('tr', {
-      	id: 'mergeRow'
+        id: 'mergeRow'
       }, false, false);
       var col1 = create('td', {
         colspan: '2'
@@ -989,7 +989,7 @@ registerFunction(function huntingCrystalImprovements() {
       select.selectedIndex = 0;
       //Add selectbox & button after crystal is selected in inventory
       $(this).click(function() {
-      	$('#itemPreview tbody').append(row)
+        $('#itemPreview tbody').append(row)
       });
       //Merging!
       $(merge).click(function() {
@@ -1131,6 +1131,51 @@ registerFunction(function addAlertPreview() {
       .mouseout(hideddrivetip);
   });
 }, [".*"]);
+
+registerFunction(function easyAttack() {
+  $('a[href="map2.php"]').closest('tbody').append('\
+    <tr class="standardrow" style="background-color: #000000;">\
+      <td>\
+        <button\
+        style="display: block; margin-left: auto; margin-right: auto;"\
+        id="re-attack-btn" class="attackbutton" autofocus>\
+        Attack Again\
+        </button>\
+      </td>\
+    </tr>\
+  ');
+
+  let check = $('table.maintable').find('font:contains("retreats")');
+
+  if (check.length) {
+    let btnData;
+
+    $.ajax({
+      beforeSend: function() {
+        $('#re-attack-btn').each(function() {
+            $("<img style='display: block; margin: auto;' id='loader' src=\""+loaderAnim+"\" />")
+              .insertBefore($(this));
+            btnData = $(this).detach();
+        })
+      },
+      url: 'map2.php',
+      success: function(data) {
+        let btn = $(data).find('input[value="Attack"]');
+
+        if (btn.length < 1) {
+          $('#loader').replaceWith('<p style="font-size: 13px; font-family: Arial; text-align: center;">Guards cleared</p>');
+        } else {
+        $(btnData).insertBefore('#loader').focus();
+        $('#loader').remove();
+            $('#re-attack-btn').click(function() {
+            $(this).prop('disabled', true);
+            $(btn).trigger('click');
+          })
+        }
+      }
+    });
+  }
+}, ["hunting3.php"]);
 
 // =============================================================================
 //                                   Jobs
