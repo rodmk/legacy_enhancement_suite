@@ -5,8 +5,8 @@ Simple userscript that provides a variety of tweaks, enhacements, and fixes for 
 Installation Instructions
 -------------------------
 ### Firefox / Chrome
-1. **Firefox**: Install [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) / **Chrome**: Install [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo).
-2. [Click here.](https://github.com/rodmk/legacy_enhancement_suite/raw/master/legacy_enhancement_suite.user.js)
+1. **Firefox**: Install [Tampermonkey](https://addons.mozilla.org/en-GB/firefox/addon/tampermonkey/) / **Chrome**: Install [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo).
+2. [Click here.](https://github.com/legacyPie/legacy_enhancement_suite/raw/master/legacy_enhancement_suite.user.js)
 3. Click on 'Install' when prompted.
 
 ### Internet Explorer / Safari / Other
