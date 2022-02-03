@@ -29,9 +29,7 @@ Features
 - Binds the "A" key on your keyboard to add the selected item to your stand.
 As long as you are not in a text box and press "A", the item will be added to the stand; provided the price field is not invalid.
 - When taking an Item from your stand or storage, your page will scroll back down to the same position; you no longer have to keep scrolling to find the same item.
-
-### Messaging
-- A confirmation box will appear when deleting Private Mails.
+- Adding items from profile will now automatically check the "Add all from inventory" checkbox. The "A" key will also work as a shortcut to add items from the inventory confirmation page.
 
 ### Abilities
 - Fully Trained Abilities no longer show up in the drop-down menu.
@@ -41,13 +39,11 @@ As long as you are not in a text box and press "A", the item will be added to th
  - Example: 1;PlayerName;Points
  - This is available for all 6 Top 10 tables & the 2 Top 10 tables for Gangs.
 
+### Gang Complete WFP List
+- As above, export available for gang complete WFP list in format 1;PlayerName;Level;Points
+
 ### Jobs
 - Automatically selects the maximum amount of times you can work with your current turns.
-
-### Flags
-- You can now upload Flags.
- - Images are converted automatically.
- - You can choose which part of the image is to be converted to the Flag.
 
 ### Hunting
 - Allows the player to Hunt the same Hunting Group on the same page as the final hit that results in victory.
