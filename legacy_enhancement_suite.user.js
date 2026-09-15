@@ -254,34 +254,6 @@ function getNextSpecialHuntTime() {
 }
 
 // =============================================================================
-//                                Messages
-// =============================================================================
-/**
- * FEATURE: Adds confirmation dialog when deleting messages.
- */
-registerFunction(function addDeleteMessageConfirm() {
-  $('a[href*="messages4.php"]').each(function() {
-    $(this).click(function() {
-      return confirm("Delete Mail?");
-    });
-  });
-
-  // For the checkbox delete link, override the onclick event handler with the
-  // confirm dialog.
-  $('a[onclick*="submitchecks(\'delete\');"]').each(function() {
-    var clickhandler = $(this)[0].onclick;
-    $(this).attr("onclick", "return false;");
-
-    $(this).click(function() {
-      if (confirm("Delete Mail?")) {
-        return clickhandler();
-      }
-    });
-  });
-}, ["messages.php"]);
-
-
-// =============================================================================
 //                                  Market
 // =============================================================================
 registerFunction(function setUpStandAndStorage() {

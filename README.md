@@ -30,9 +30,6 @@ Features
 As long as you are not in a text box and press "A", the item will be added to the stand; provided the price field is not invalid.
 - When taking an Item from your stand or storage, your page will scroll back down to the same position; you no longer have to keep scrolling to find the same item.
 
-### Messaging
-- A confirmation box will appear when deleting Private Mails.
-
 ### Top 10 Lists
 - Creates 10 entries for the Top 10 separated by semi-colons for easy copy-pasting.
  - Example: 1;PlayerName;Points
