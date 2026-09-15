@@ -138,37 +138,15 @@ registerFunction(function addQuickHealKeybinding() {
   Mousetrap.bind('h', fullHeal);
 }, [".*"]);
 
-/**
- * @return {string} Secret key use for Hospital operations
- */
-function getHospitalKey() {
-  return cachedFetchWithRefresh(
-    "hospital:key",
-    SEC_IN_DAY,
-    "/hospital.php",
-    function(data) {
-      // Fetch the key from any uri containing the key param in the page
-      var uri = URI($(data).find("a[href*='hospital.php'][href*=key]:first")[0].href);
-      var hospital_key = uri.query(true).key;
-      return hospital_key;
-    }
-  );
-}
-
-/**
- * Heals the player fully via hospital/sanctuary
- */
 function fullHeal() {
-  // Skip attempting to heal if we're in the WL.
   if (Player.isInWL()) {
     return;
   }
 
-  var uri = URI("/hospital.php").query({
-    m: 1,
-    key: getHospitalKey()
-  });
-  $.get(uri.href());
+  var heal_link = document.querySelector('a[onclick*="doFullHeal"]');
+  if (heal_link) {
+    heal_link.click();
+  }
 }
 
 /**
