@@ -1064,52 +1064,100 @@ registerFunction(function addAlertPreview() {
 
   // Returns 3x3 map preview centered around x,y coords
   function mapPreview(x, y) {
-    // Add 'c' parameter to avoid caching
-    var map_uri = URI('/maps/map1_gang.png').query({
-      'c': Date.now()
-    });
-    var overlay_uri = URI('/maps/map1_overlay.png').query({
-      'c': Date.now()
-    });
-    var map_preview = $('<img>')
-      .attr({
-        'src': overlay_uri.href()
-      })
-      .css({
-        'background': sprintf('url(%s)', map_uri.href()),
-        // Use CSS to crop/adjust image location
-        'position': 'absolute',
-        'clip': sprintf(
-          'rect(%dpx, %dpx, %dpx, %dpx)',
-          SQW * (y - 2), SQW * (x + 1), SQW * (y + 1), SQW * (x - 2)
-        ),
-        'top': sprintf('%dpx', -SQW * (y - 2)),
-        'left': sprintf('%dpx', -SQW * (x - 2)),
-      });
+    var cacheKey = Date.now();
+    var mapUri = '/maps/map1_gang.png?c=' + cacheKey;
+    var overlayUri = '/maps/map1_overlay.png?c=' + cacheKey;
+    var mapImage = document.createElement('img');
+    mapImage.src = overlayUri;
+    mapImage.style.backgroundImage = 'url("' + mapUri + '")';
+    mapImage.style.position = 'absolute';
+    mapImage.style.top = -SQW * (y - 2) + 'px';
+    mapImage.style.left = -SQW * (x - 2) + 'px';
 
-    var preview = $('<div>')
-      .css({
-        'width': sprintf('%dpx', PW),
-        'height': sprintf('%dpx', PW),
-      })
-      .append(map_preview);
-    var container = $('<div>').append(preview);
+    var preview = document.createElement('div');
+    preview.style.width = PW + 'px';
+    preview.style.height = PW + 'px';
+    preview.style.overflow = 'hidden';
+    preview.style.position = 'relative';
+    preview.appendChild(mapImage);
 
-    return container;
+    return preview.outerHTML;
   }
 
-  $('#combatlog > font:contains("reported")').each(function() {
-    var attack_txt = $(this).text();
-    var coords = attack_txt.match(/(\d+),(\d+)/);
-    var x = parseInt(coords[1]),
-      y = parseInt(coords[2]);
-    var map_preview = mapPreview(x, y).html();
+  function getAlertCoords(text) {
+    var coords = text.match(/reported at\s+(\d+),(\d+)/i);
+    if (!coords) {
+      return null;
+    }
+    return {
+      x: parseInt(coords[1], 10),
+      y: parseInt(coords[2], 10)
+    };
+  }
 
-    $(this)
-      .mouseover(function() {
-        ddrivetip(map_preview, PW);
-      })
-      .mouseout(hideddrivetip);
+  function bindPreview(element) {
+    if (element.hasAttribute('data-les-alert-preview')) {
+      return;
+    }
+    element.setAttribute('data-les-alert-preview', '');
+    element.addEventListener('mouseenter', function() {
+      var coords = getAlertCoords(element.textContent);
+      if (coords) {
+        ddrivetip(mapPreview(coords.x, coords.y), PW);
+      }
+    });
+    element.addEventListener('mouseleave', hideddrivetip);
+  }
+
+  function bindAlertPreviews() {
+    Array.prototype.forEach.call(
+      document.querySelectorAll('#combatlog-content > font'),
+      function(element) {
+        if (getAlertCoords(element.textContent)) {
+          bindPreview(element);
+        }
+      }
+    );
+
+    var gangChat = document.querySelector('#gangchat-content');
+    if (!gangChat) {
+      return;
+    }
+    var walker = document.createTreeWalker(
+      gangChat,
+      NodeFilter.SHOW_TEXT,
+      null,
+      false
+    );
+    var alertNodes = [];
+    while (walker.nextNode()) {
+      if (getAlertCoords(walker.currentNode.nodeValue)) {
+        alertNodes.push(walker.currentNode);
+      }
+    }
+    alertNodes.forEach(function(textNode) {
+      if (textNode.parentElement.hasAttribute('data-les-alert-preview')) {
+        return;
+      }
+      var wrapper = document.createElement('span');
+      textNode.parentNode.insertBefore(wrapper, textNode);
+      wrapper.appendChild(textNode);
+      bindPreview(wrapper);
+    });
+  }
+
+  bindAlertPreviews();
+
+  var alertObserver = new MutationObserver(bindAlertPreviews);
+  ['#combatlog-content', '#gangchat-content'].forEach(function(selector) {
+    var element = document.querySelector(selector);
+    if (element) {
+      alertObserver.observe(element, {
+        childList: true,
+        characterData: true,
+        subtree: true
+      });
+    }
   });
 }, [".*"]);
 
