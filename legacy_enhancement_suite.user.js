@@ -1114,25 +1114,6 @@ registerFunction(function addAlertPreview() {
 }, [".*"]);
 
 // =============================================================================
-//                                   Jobs
-// =============================================================================
-/**
- * FEATURE: Select to do as many jobs as your current energy allows by default.
- */
-registerFunction(function autoSelectMaxJobs() {
-  var energy = Player.getEnergy();
-  var energy_cost = parseInt($("tr:contains('Energy Cost') font.text").text());
-  var max_jobs = Math.floor(energy / energy_cost);
-
-  $(".selectbox option").each(function() {
-    if ($(this).val() <= max_jobs) {
-      $(this).prop('selected', true);
-    }
-  });
-}, ["jobcenter2.php", "avatarjob2.php"]);
-
-
-// =============================================================================
 //                                   Flags
 // =============================================================================
 /**

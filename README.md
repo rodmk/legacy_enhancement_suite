@@ -38,9 +38,6 @@ As long as you are not in a text box and press "A", the item will be added to th
  - Example: 1;PlayerName;Points
  - This is available for all 6 Top 10 tables & the 2 Top 10 tables for Gangs.
 
-### Jobs
-- Automatically selects the maximum amount of times you can work with your current turns.
-
 ### Flags
 - You can now upload Flags.
  - Images are converted automatically.
