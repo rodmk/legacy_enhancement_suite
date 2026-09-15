@@ -1059,8 +1059,9 @@ registerFunction(function huntingCrystalImprovements() {
  * FEATURE: Adds a 3x3 hovercard preview to gang alerts.
  */
 registerFunction(function addAlertPreview() {
-  var SQW = 33; // square width = 33px
-  var PW = 3 * SQW - 3; // preview width (adjusted for borders)
+  var CELL_PITCH = 33;
+  var MAP_SIZE = 15 * CELL_PITCH + 1;
+  var PREVIEW_SIZE = 3 * CELL_PITCH + 1;
 
   // Returns 3x3 map preview centered around x,y coords
   function mapPreview(x, y) {
@@ -1070,16 +1071,24 @@ registerFunction(function addAlertPreview() {
     var mapImage = document.createElement('img');
     mapImage.src = overlayUri;
     mapImage.style.backgroundImage = 'url("' + mapUri + '")';
-    mapImage.style.position = 'absolute';
-    mapImage.style.top = -SQW * (y - 2) + 'px';
-    mapImage.style.left = -SQW * (x - 2) + 'px';
+    mapImage.style.backgroundRepeat = 'no-repeat';
+    mapImage.style.display = 'block';
+
+    var mapLayer = document.createElement('div');
+    mapLayer.style.width = MAP_SIZE + 'px';
+    mapLayer.style.height = MAP_SIZE + 'px';
+    mapLayer.style.overflow = 'hidden';
+    mapLayer.style.position = 'absolute';
+    mapLayer.style.top = -CELL_PITCH * (y - 2) + 'px';
+    mapLayer.style.left = -CELL_PITCH * (x - 2) + 'px';
+    mapLayer.appendChild(mapImage);
 
     var preview = document.createElement('div');
-    preview.style.width = PW + 'px';
-    preview.style.height = PW + 'px';
+    preview.style.width = PREVIEW_SIZE + 'px';
+    preview.style.height = PREVIEW_SIZE + 'px';
     preview.style.overflow = 'hidden';
     preview.style.position = 'relative';
-    preview.appendChild(mapImage);
+    preview.appendChild(mapLayer);
 
     return preview.outerHTML;
   }
@@ -1103,7 +1112,7 @@ registerFunction(function addAlertPreview() {
     element.addEventListener('mouseenter', function() {
       var coords = getAlertCoords(element.textContent);
       if (coords) {
-        ddrivetip(mapPreview(coords.x, coords.y), PW);
+        ddrivetip(mapPreview(coords.x, coords.y), PREVIEW_SIZE);
       }
     });
     element.addEventListener('mouseleave', hideddrivetip);
