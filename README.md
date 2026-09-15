@@ -13,6 +13,15 @@ Installation Instructions
 1. Install [Firefox](https://www.mozilla.org/firefox/) or [Chrome](https://www.google.com/chrome/).
 2. Refer to the Firefox/Chrome installation instructions above.
 
+Development
+-----------
+Enable **Allow access to file URLs** for Tampermonkey in Chrome's extension
+settings, then open the checked-out `legacy_enhancement_suite.user.js` file in
+Chrome.
+
+After changing the working copy, reopen that URL and select Update in
+Tampermonkey, then refresh the game page.
+
 Features
 --------
 ### Healing

@@ -24,18 +24,18 @@
 // @name        Legacy Enhancement Suite
 // @namespace   LES
 // @description Improvements to Legacy Game
-// @include     http://www.legacy-game.net/*
-// @include     http://dev.legacy-game.net/*
+// @match       https://www.legacy-game.net/*
+// @match       https://dev.legacy-game.net/*
 // @version     0.0.59
 // @grant       none
 // @require     https://raw.githubusercontent.com/nnnick/Chart.js/4aa274d5b2c82e28f7a7b2bb78db23b0429255a1/Chart.js
-// @require     http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
-// @require     http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js
+// @require     https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
+// @require     https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js
 // @require     https://raw.githubusercontent.com/rodmk/locache/master/locache.js
-// @require     http://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.js
-// @require     http://cdnjs.cloudflare.com/ajax/libs/sprintf/0.0.7/sprintf.js
-// @require     http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore.js
-// @require     http://cdnjs.cloudflare.com/ajax/libs/URI.js/1.11.2/URI.min.js
+// @require     https://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.js
+// @require     https://cdnjs.cloudflare.com/ajax/libs/sprintf/0.0.7/sprintf.js
+// @require     https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore.js
+// @require     https://cdnjs.cloudflare.com/ajax/libs/URI.js/1.11.2/URI.min.js
 // ==/UserScript==
 /* global $, jQuery,locache, Mousetrap, URI, ddrivetip, hideddrivetip, bar1,
 _,sprintf,Chart, positionToElement, select, pic */
