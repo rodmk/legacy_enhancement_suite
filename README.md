@@ -33,9 +33,6 @@ As long as you are not in a text box and press "A", the item will be added to th
 ### Messaging
 - A confirmation box will appear when deleting Private Mails.
 
-### Abilities
-- Fully Trained Abilities no longer show up in the drop-down menu.
-
 ### Top 10 Lists
 - Creates 10 entries for the Top 10 separated by semi-colons for easy copy-pasting.
  - Example: 1;PlayerName;Points

@@ -406,25 +406,6 @@ registerFunction(function addMarketSearchTooltips() {
 }, ["marketsearch2.php"]);
 
 // =============================================================================
-//                                Abilities
-// =============================================================================
-/**
- * FEATURE: Removes completed abilities from the training selection options.
- */
-registerFunction(function trimAbilityList() {
-  $('option').each(function() {
-    // Check trained level out of total. If they're equal, remove the option.
-    var match = $(this).text().match(/\d/g);
-    if (match && match.length === 2) {
-      if (match[0] === match[1]) {
-        $(this).remove();
-      }
-    }
-  });
-}, ["information2.php"]);
-
-
-// =============================================================================
 //                               Top 10 Lists
 // =============================================================================
 /**
