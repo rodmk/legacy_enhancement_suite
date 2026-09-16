@@ -31,9 +31,8 @@
 // @require     https://raw.githubusercontent.com/nnnick/Chart.js/4aa274d5b2c82e28f7a7b2bb78db23b0429255a1/Chart.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js
-// @require     https://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.js
 // ==/UserScript==
-/* global $, jQuery, Mousetrap, ddrivetip, hideddrivetip, bar1,
+/* global $, jQuery, ddrivetip, hideddrivetip, bar1,
 Chart, positionToElement, select, pic */
 
 
@@ -130,7 +129,7 @@ var Player = {
  * FEATURE: Binds 'h' to full heal.
  */
 registerFunction(function addQuickHealKeybinding() {
-  Mousetrap.bind('h', fullHeal);
+  bindShortcut('h', fullHeal);
 }, [".*"]);
 
 function fullHeal() {
@@ -184,7 +183,7 @@ registerFunction(function setUpStandAndStorage() {
 
   // FEATURE: Bind 'a' to 'add item' button.
   var item_added = false;
-  Mousetrap.bind('a', function() {
+  bindShortcut('a', function() {
     if (item_added) {
       return;
     }
@@ -1076,6 +1075,25 @@ registerFunction(function addFlagUpload() {
 // =============================================================================
 //                                 Utilities
 // =============================================================================
+function bindShortcut(key, handler) {
+  document.addEventListener('keydown', function(event) {
+    var target = event.target;
+    if (
+      event.defaultPrevented ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.altKey ||
+      target.isContentEditable ||
+      /^(INPUT|SELECT|TEXTAREA)$/.test(target.tagName)
+    ) {
+      return;
+    }
+    if (event.key.toLowerCase() === key) {
+      handler();
+    }
+  });
+}
+
 /**
  * Does a synchronous (blocking) get and returns the result.
  */
