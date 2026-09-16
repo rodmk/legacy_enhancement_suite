@@ -41,7 +41,6 @@ As long as you are not in a text box and press "A", the item will be added to th
  - You can choose which part of the image is to be converted to the Flag.
 
 ### Hunting
-- Allows the player to Hunt the same Hunting Group on the same page as the final hit that results in victory.
 - Shows remaining inventory spaces left after hunting.
 - Tracks drops by hunting groups and shows drops and drop rates in the hunting page.
 

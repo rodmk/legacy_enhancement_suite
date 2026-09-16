@@ -509,9 +509,6 @@ registerFunction(function prefillPlayerCombatTarget() {
 // =============================================================================
 //                                Hunting
 // =============================================================================
-/**
- * FEATURE: Adds a "Start Another Hunt" button after a completed hunt.
- */
 registerFunction(function huntingImprovements() {
   /*****************************************************
                       General Methods
@@ -542,7 +539,7 @@ registerFunction(function huntingImprovements() {
       }, {});
   }
   function getInventoryFreeSpace(html) {
-    return $(html).find('.itemgrid:not(.equipped) td:not(:has(img))').length;
+    return $(html).find('.item-grid:not(.equipped) .item_slot:not(:has(img))').length;
   }
   /*****************************************************
                       Hunt Recording Methods
@@ -586,126 +583,42 @@ registerFunction(function huntingImprovements() {
                       Hunting Page Methods
   /****************************************************/
   function enhanceHuntResult() {
-    var block = true,loader;
-    //Build a clickable button which allows the user to attack
-    //the same hunt group again without visiting the hunt page again
-    //If there are buttons present, the fight is ongoing
-    //If there is a page title, user is on error or multiattack screen
-    if (!($('.button').length || $('.pagetitle').length)) {
-      //Create Start Another Hunt button & position next to Back to Hunting page url, change row to fit
-      //Button defaulted to disabled while waiting for attack string
-      var td = $('td:has("#back-to-hunting")');
-      td.prop("width", "50%");
-      var newCell = create("td", {
-          class: "standardrow",
-          width: "50%",
-          align: "center",
-          style: "position:relative"
-        }, false, td.parent()[0]),
-        newButt = create("input", {
-          type: "button",
-          class: "button",
-          value: "Start Another Hunt",
-          disabled: "disabled"
-        }, false, newCell),
-        newRow = create("tr", {}, false, false);
-        create("img",{id:"loader",src:loaderAnim,style:'position:absolute;top:0px;right:0px;display:none'},false,newCell);
-        loader =  {
-            start : function(){
-              block = true;
-              newButt.disabled = true;
-              $('#loader').show();
-            },
-            stop : function(){
-              block = false;
-              newButt.disabled = !($('input[name=attackstring]').length);
-              $('#loader').hide();
-            }
-      };
+    var huntAgain = Array.from(document.querySelectorAll('button, input[type="button"], input[type="submit"]')).find(function(control) {
+      return (control.textContent || control.value || '').trim() === 'Hunt Again';
+    });
+    if (!huntAgain) return;
+
+    var controlsRow = huntAgain.closest('tr');
+    if (controlsRow) {
+      var inventoryRow = create("tr", {}, false, false);
       create("td", {
         class: "standardrow",
         colspan: "2",
         align: "center"
-      }, "You have <span id='invSpace'>##</span> inventory spaces remaining.", newRow);
-      td.before(newCell).parent().after(newRow);
-
-      //Gather attack string from hunting.php && cookie info for next hunt form
-      var form = create("form", {
-          action: "hunting3.php",
-          method: 'post',
-          style: "display:none;"
-        }, false, document.body),
-        attackString,
-        cookies = getCookies();
-      create("input", {
-        type: "hidden",
-        name: "group",
-        value: cookies.hunting_group
-      }, false, form);
-      create("input", {
-        type: "hidden",
-        name: "level",
-        value: cookies.hunting_level
-      }, false, form);
-      create("input", {
-        type: "submit",
-        value: "Attack Target",
-        class: "button",
-        id: "hunt-" + cookies.hunting_group + "-" + cookies.hunting_level
-      }, false, form);
-
-      var t = new hunts();
-      t.load();
-      var result = $('font:contains("Item Found")');
-      //Any hunt drop
-      if (result.length) {
-        t.add(cookies.hunting_group, result.text().match(/^Item Found : (.*)(?=\.$)/).pop());
-        //Sent to void
-      } else if ($('font:contains("An item was dropped but your inventory was full, so it was sent to the void.")').length) {
-        t.add(cookies.hunting_group, "Void");
-        //No drop (no including when you lose because that could just skew data)
-      } else if (!($('font:contains("You have been defeated"),a[href="map2.php"]').length)) {
-        t.add(cookies.hunting_group, "NA");
-      }
-      t.save();
-      //Print current record to console, commenting out for debugging
-      //t.toConsole(cookies.hunting_group);
-
-      $.ajax({
-        url: 'inventory.php?m=0',
-        async: true,
-        beforeSend: function(){
-          loader.start();
-        },
-        success: function(data) {
-          $('#invSpace').text(getInventoryFreeSpace(data));
-          loader.stop();
-        }
-      });
-      $.ajax({
-        url: 'hunting.php',
-        async: true,
-        success: function(data) {
-          attackString = data.match(/([a-zA-Z]{20})(?=">')/g).pop();
-          create("input", {
-            type: "hidden",
-            name: "attackstring",
-            value: attackString
-          }, false, form);
-          (function blockCheck() {
-            if (block)
-              setTimeout(blockCheck, 250);
-            else
-              newButt.disabled = false;
-          })();
-        }
-      });
-      //Button method - disable to prevent multi-attack & submit to proceed
-      $(newButt).click(function() {
-        $(this).prop("disabled", true);
-        form.submit();
-      });
+      }, "You have <span id='invSpace'>##</span> inventory spaces remaining.", inventoryRow);
+      controlsRow.parentNode.insertBefore(inventoryRow, controlsRow.nextSibling);
     }
+
+    var cookies = getCookies();
+    var t = new hunts();
+    t.load();
+    var result = $('font:contains("Item Found")');
+    if (result.length) {
+      t.add(cookies.hunting_group, result.text().match(/^Item Found : (.*)(?=\.$)/).pop());
+    } else if ($('font:contains("An item was dropped but your inventory was full, so it was sent to the void.")').length) {
+      t.add(cookies.hunting_group, "Void");
+    } else if (!($('font:contains("You have been defeated"),a[href="map2.php"]').length)) {
+      t.add(cookies.hunting_group, "NA");
+    }
+    t.save();
+
+    $.ajax({
+      url: 'inventory.php?m=0',
+      async: true,
+      success: function(data) {
+        $('#invSpace').text(getInventoryFreeSpace(data));
+      }
+    });
   }
   /*****************************************************
                       Hunting Overview Page
@@ -764,9 +677,7 @@ registerFunction(function huntingImprovements() {
   //call methods where relevant
   switch (location.pathname) {
     case '/hunting3.php':
-      if ($('form').length === 0) {
-        enhanceHuntResult();
-      }
+      enhanceHuntResult();
       break;
     case '/hunting.php':
       showDrops();
