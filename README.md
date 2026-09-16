@@ -42,7 +42,6 @@ As long as you are not in a text box and press "A", the item will be added to th
 
 ### Hunting
 - Allows the player to Hunt the same Hunting Group on the same page as the final hit that results in victory.
-- Allows the player to combine a Crystal that just dropped with another if found in your Inventory.
 - Shows remaining inventory spaces left after hunting.
 - Tracks drops by hunting groups and shows drops and drop rates in the hunting page.
 

@@ -510,16 +510,9 @@ registerFunction(function prefillPlayerCombatTarget() {
 //                                Hunting
 // =============================================================================
 /**
- * FEATURE: Allow the player to combine their newly dropped crystal while
- * hunting.
- * FEATURE: Also adds a "Hunt Again" button to let the player continue to hunt
- * without going back to the hunt page.
- * FEATURE: Adds merging option on inventory page.
- *
- * Credit goes to langer for implementation.
- * Source: https://greasyfork.org/scripts/4375-crystal-check
+ * FEATURE: Adds a "Start Another Hunt" button after a completed hunt.
  */
-registerFunction(function huntingCrystalImprovements() {
+registerFunction(function huntingImprovements() {
   /*****************************************************
                       General Methods
   /****************************************************/
@@ -548,83 +541,8 @@ registerFunction(function huntingCrystalImprovements() {
         return a;
       }, {});
   }
-  /*****************************************************
-                      Inventory
-  /****************************************************/
-
-  //Inventory API to manipulate inventory items
-  function Inventory(html) {
-    this.items = getItems();
-    this.key = html.match(/key=(\w{10})/).pop();
-    this.freeSpace = $(html).find('.itemgrid:not(.equipped) td:not(:has(img))').length;
-    var key = this.key;
-    //Inventory items encapsulated to organise data
-    function Item(name, slot, trades, id) {
-      this.name = name;
-      this.slot = slot;
-      this.trades = trades;
-      this.id = id;
-      //Crystal merging method
-      this.merge = function(that, callback) {
-        var slot1 = this.slot;
-        var slot2 = that.slot;
-        $.ajax({
-          type: "POST",
-          url: "inventory10.php?i=" + slot1 + "&key=" + key,
-          async: true,
-          data: {
-            item: slot2
-          },
-          success: function(data) {
-            //If method available, use on response data to check for further crystal merging
-            //Response from merging should be the redirected inventory page, which can be used to
-            //refresh inventory data
-            if (callback)
-              callback.call(this, data);
-          }
-        });
-      };
-    }
-    //captures all item data for the inventory & encapsulates as an object
-    function getItems() {
-      //Match javascript lines on inventory.php for item id & trades
-      //Each resulting index corresponds to the slot in inventory
-      //var itemPreviews = html.match(/(itemPreviews\[)((.|\n)*?)(Default|table>');/g);
-      var tempItems = [];
-      var panels = $(html).find('.panel');
-      var inven = panels.splice(-2);
-      //var buffer = $(panels[1]).find('img.itemicon').length;
-      $(inven).find('img.itemicon').each(function() {
-        var slot = parseInt($(this).attr('name'));
-        var itemID = $(this).attr('id').split('|')
-          //console.log(slot,$(this).attr('title'),buffer+slot)
-        //var dat = itemPreviews[buffer+slot].replace("Un-tradable", "0 Trade").match(/(\d+)(?=(&c=|\sTrade))/g);
-        tempItems.push(new Item(itemID[0], slot, 99999, itemID[1]));
-      });
-      return tempItems;
-    }
-
-    //Returns all crystals in the inventory, sorted by item id (newest first)
-    this.getCrystals = function() {
-      return this.items
-        //check if item is a crystal (must be have some word before crystal Crystal to avoid Crstal Rings)
-        .filter(function(a) {
-          return a.name.match(/.+Crystal/) !== null;
-        })
-        //order from newest to oldest (item id descending)
-        .sort(function(a, b) {
-          return b.id - a.id;
-        });
-    };
-    //Returns an array of matching size/colour crystals
-    //Ordered by trades on given crystal ascending, then everything else descending
-    this.matchCrystal = function(crystal) {
-      return this.getCrystals().filter(function(a) {
-        return a.id !== crystal.id && a.name == crystal.name && crystal.name.search('Perfect') == -1;
-      }).sort(function(a, b) {
-        return (a.trades >= crystal.trades && b.trades >= crystal.trades) ? a.trades - b.trades : b.trades - a.trades;
-      });
-    };
+  function getInventoryFreeSpace(html) {
+    return $(html).find('.itemgrid:not(.equipped) td:not(:has(img))').length;
   }
   /*****************************************************
                       Hunt Recording Methods
@@ -667,77 +585,8 @@ registerFunction(function huntingCrystalImprovements() {
   /*****************************************************
                       Hunting Page Methods
   /****************************************************/
-  function huntMerge() {
-    //Once a crystal drop has been detected
-    var block = true,drop = false,loader;
-
-    function checkDrop() {
-      //Display 'found match' message on single line row
-      function singleRow(crystal) {
-        var r = create('tr', {}, false, $('tbody:contains("Item Found")')[0]);
-        create('td', {
-            width: "100%",
-            class: "standardrow",
-            align: "center",
-            colspan: "2"
-          },
-          'You have a matching ' + crystal.name + ' in your inventory. <span class="merge" style="cursor:pointer;">[Merge]</span>',
-          r);
-      }
-
-      //create 'item drop' row displaying merged crystal image + result message
-      function doubleRow(crystal) {
-        var r = create('tr', {}, false, $('tbody:contains("Item Found")')[0]);
-        create('td', {
-          width: "10%",
-          class: "standardrow",
-          align: "center"
-        }, "<img src='img-bin/items/" + crystal.name.toLowerCase() + ".png'/>", r);
-        create('td', {
-          width: "90%",
-          class: "standardrow",
-          align: "center"
-        }, crystal.name + " added to inventory.", r);
-      }
-      $.ajax({
-        url: 'inventory.php?m=0',
-        async: true,
-        beforeSend: function() {
-          loader.start();
-        },
-        success: function(data) {
-          var inv = new Inventory(data);
-          $('#invSpace').text(inv.freeSpace);
-          var drop = inv.getCrystals()[0];
-          //console.log(drop)
-          option(drop, inv.matchCrystal(drop));
-          loader.stop();
-          //recursive method - if crystal match, display option to merge - if merged, display result
-          //if crystal match with previous result, offer to match again, etc
-          function option(crystal, matches) {
-            if (matches.length > 0) {
-              singleRow(matches[0]);
-              $('span.merge').click(function() {
-                $(this).remove();
-                loader.start();
-                //merge newest crystal [0] with best matching crystal [1]
-                crystal.merge(matches[0],
-                  //anonymous function as input for merge callback to display merge option on previously merged crystal
-                  function(data) {
-                    var nextInv = new Inventory(data);
-                    $('#invSpace').text(nextInv.freeSpace);
-                    var newCrystal = nextInv.getCrystals()[0];
-                    doubleRow(newCrystal);
-                    option(newCrystal, nextInv.matchCrystal(newCrystal));
-                    loader.stop();
-                  }
-                );
-              });
-            }
-          }
-        }
-      });
-    }
+  function enhanceHuntResult() {
+    var block = true,loader;
     //Build a clickable button which allows the user to attack
     //the same hunt group again without visiting the hunt page again
     //If there are buttons present, the fight is ongoing
@@ -811,10 +660,6 @@ registerFunction(function huntingCrystalImprovements() {
       //Any hunt drop
       if (result.length) {
         t.add(cookies.hunting_group, result.text().match(/^Item Found : (.*)(?=\.$)/).pop());
-        //Hunt Group 18 - Crystal Entities and crystal drop
-        if ($('font:contains("An entity")').length) {
-          checkDrop();
-        }
         //Sent to void
       } else if ($('font:contains("An item was dropped but your inventory was full, so it was sent to the void.")').length) {
         t.add(cookies.hunting_group, "Void");
@@ -826,19 +671,17 @@ registerFunction(function huntingCrystalImprovements() {
       //Print current record to console, commenting out for debugging
       //t.toConsole(cookies.hunting_group);
 
-      if (!drop) {
-        $.ajax({
-          url: 'inventory.php?m=0',
-          async: true,
-          beforeSend: function(){
-            loader.start();
-          },
-          success: function(data) {
-            $('#invSpace').text((new Inventory(data)).freeSpace);
-            loader.stop();
-          }
-        });
-      }
+      $.ajax({
+        url: 'inventory.php?m=0',
+        async: true,
+        beforeSend: function(){
+          loader.start();
+        },
+        success: function(data) {
+          $('#invSpace').text(getInventoryFreeSpace(data));
+          loader.stop();
+        }
+      });
       $.ajax({
         url: 'hunting.php',
         async: true,
@@ -863,75 +706,6 @@ registerFunction(function huntingCrystalImprovements() {
         form.submit();
       });
     }
-  }
-  /*****************************************************
-                      Inventory Page Methods
-  /****************************************************/
-
-  function invMerge() {
-    //Call current inventory as instance of inventory object defined above for managing crystals
-    var inv = new Inventory(document.body.innerHTML);
-    var mergeForm = create('form', {
-      method: 'post'
-    }, false, document.body);
-    var formInput = create("input", {
-      type: "hidden",
-      name: "item",
-    }, false, mergeForm);
-    $('.itemicon').click(function(){
-    	$('#mergeRow').remove();
-    })
-    $('img[title*=" Crystal"]').each(function() {
-      //Build selectbox containing matching crystal options & merge button
-      var slot = $(this).attr('name');
-      var row = create('tr', {
-      	id: 'mergeRow'
-      }, false, false);
-      var col1 = create('td', {
-        colspan: '2'
-      }, false, row);
-      var select = create('select', {
-        name: 'item',
-        id: 'crystalSelect',
-        class: 'selectbox',
-        style: 'width:75%;'
-      }, false, col1);
-      var merge = create('input', {
-        id: 'merge',
-        type: 'button',
-        class: 'button',
-        style: 'width:23%',
-        value: 'Merge'
-      }, false, col1);
-      var crystal = inv.getCrystals().reduce(function(a, b) {
-        return b.slot == slot ? b : a;
-      }, null);
-      var matches = inv.matchCrystal(crystal);
-      if (matches.length > 0) {
-        matches.forEach(function(a) {
-          create('option', {
-            value: a.slot
-          //}, a.trades + ' Trades | ID:' + a.id, select);
-          }, 'Slot #'+a.slot +' | ID:' + a.id, select);
-        });
-      } else {
-        create('option', {}, 'No Matching Crystals', select);
-        select.disabled = true;
-        merge.disabled = true;
-      }
-      select.selectedIndex = 0;
-      //Add selectbox & button after crystal is selected in inventory
-      $(this).click(function() {
-      	$('#itemPreview tbody').append(row)
-      });
-      //Merging!
-      $(merge).click(function() {
-        //Re-create 'crystal to be merged' input as child of form
-        formInput.value = select.selectedOptions[0].value;
-        mergeForm.action = 'inventory10.php?i=' + crystal.slot + '&key=' + inv.key;
-        mergeForm.submit();
-      });
-    });
   }
   /*****************************************************
                       Hunting Overview Page
@@ -989,19 +763,16 @@ registerFunction(function huntingCrystalImprovements() {
   /****************************************************/
   //call methods where relevant
   switch (location.pathname) {
-    case '/inventory.php':
-      invMerge();
-      break;
     case '/hunting3.php':
       if ($('form').length === 0) {
-        huntMerge();
+        enhanceHuntResult();
       }
       break;
     case '/hunting.php':
       showDrops();
       break;
   }
-}, ['hunting.php', 'hunting3.php', 'inventory.php']);
+}, ['hunting.php', 'hunting3.php']);
 
 
 // =============================================================================
