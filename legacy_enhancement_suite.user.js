@@ -28,12 +28,11 @@
 // @match       https://dev.legacy-game.net/*
 // @version     0.0.59
 // @grant       none
-// @require     https://raw.githubusercontent.com/nnnick/Chart.js/4aa274d5b2c82e28f7a7b2bb78db23b0429255a1/Chart.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js
 // ==/UserScript==
 /* global $, jQuery, ddrivetip, hideddrivetip, bar1,
-Chart, positionToElement, select, pic */
+positionToElement, select, pic */
 
 
 var loaderAnim = "data:image/gif;base64,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";
@@ -368,52 +367,57 @@ function addTop10CopyButton(table_title) {
     }).join(',');
   }).join('\n') + '\n';
 
-  var copy_control = document.createElement('span');
+  var copy_control = createCopyControl(export_text, 'Copy ranking data as CSV');
   copy_control.style.cssFloat = 'right';
   copy_control.style.marginRight = '5px';
-  copy_control.style.position = 'relative';
+  table.rows[0].cells[0].appendChild(copy_control);
+}
 
-  var copy_button = document.createElement('button');
-  copy_button.type = 'button';
-  copy_button.textContent = '📋';
-  copy_button.title = 'Copy ranking data as CSV';
-  copy_button.setAttribute('aria-label', copy_button.title);
-  copy_button.style.padding = '0 3px';
-  copy_button.style.border = '0';
-  copy_button.style.background = 'none';
-  copy_button.style.cursor = 'pointer';
-  copy_button.style.lineHeight = '1';
+function createCopyControl(text, title) {
+  var control = document.createElement('span');
+  control.style.position = 'relative';
 
-  var copy_status = document.createElement('span');
-  copy_status.setAttribute('role', 'status');
-  copy_status.style.position = 'absolute';
-  copy_status.style.top = '100%';
-  copy_status.style.right = '0';
-  copy_status.style.zIndex = '1';
-  copy_status.style.whiteSpace = 'nowrap';
-  copy_status.style.padding = '2px 4px';
-  copy_status.style.background = '#111';
-  copy_status.style.color = '#fff';
-  var status_timeout;
-  copy_button.addEventListener('click', function() {
-    var copy_operation = navigator.clipboard ?
-      navigator.clipboard.writeText(export_text) :
+  var button = document.createElement('button');
+  button.type = 'button';
+  button.textContent = '📋';
+  button.title = title;
+  button.setAttribute('aria-label', title);
+  button.style.padding = '0 3px';
+  button.style.border = '0';
+  button.style.background = 'none';
+  button.style.cursor = 'pointer';
+  button.style.lineHeight = '1';
+
+  var status = document.createElement('span');
+  status.setAttribute('role', 'status');
+  status.style.position = 'absolute';
+  status.style.top = '100%';
+  status.style.right = '0';
+  status.style.zIndex = '1';
+  status.style.whiteSpace = 'nowrap';
+  status.style.padding = '2px 4px';
+  status.style.background = '#111';
+  status.style.color = '#fff';
+  var statusTimeout;
+  button.addEventListener('click', function() {
+    var copyOperation = navigator.clipboard ?
+      navigator.clipboard.writeText(text) :
       Promise.reject();
-    copy_operation.then(function() {
-      copy_status.textContent = 'Copied to clipboard';
+    copyOperation.then(function() {
+      status.textContent = 'Copied to clipboard';
     }).catch(function() {
-      copy_status.textContent = 'Copy failed';
+      status.textContent = 'Copy failed';
     }).finally(function() {
-      window.clearTimeout(status_timeout);
-      status_timeout = window.setTimeout(function() {
-        copy_status.textContent = '';
+      window.clearTimeout(statusTimeout);
+      statusTimeout = window.setTimeout(function() {
+        status.textContent = '';
       }, 1500);
     });
   });
 
-  copy_control.appendChild(copy_button);
-  copy_control.appendChild(copy_status);
-  table.rows[0].cells[0].appendChild(copy_control);
+  control.appendChild(button);
+  control.appendChild(status);
+  return control;
 }
 
 
@@ -519,17 +523,6 @@ registerFunction(function huntingImprovements() {
       if (!toLoad) return;
       this.hunts = JSON.parse(toLoad);
     };
-    this.toConsole = function(huntGroup) {
-      if (!this.hunts.hasOwnProperty(huntGroup)) return;
-      var o = this.hunts[huntGroup].drops;
-      var outLog = Object.keys(o).map(function(a) {
-        return {
-          Name: a,
-          Qty: o[a]
-        };
-      });
-      console.table(outLog, Object.keys(outLog[0]));
-    };
   }
 
   /*****************************************************
@@ -556,14 +549,17 @@ registerFunction(function huntingImprovements() {
     var t = new hunts();
     t.load();
     var result = $('font:contains("Item Found")');
-    if (result.length) {
-      t.add(cookies.hunting_group, result.text().match(/^Item Found : (.*)(?=\.$)/).pop());
+    var itemMatch = result.text().match(/Item Found\s*:\s*(.*?)\.\s*$/);
+    if (itemMatch) {
+      t.add(cookies.hunting_group, itemMatch[1]);
+      t.save();
     } else if ($('font:contains("An item was dropped but your inventory was full, so it was sent to the void.")').length) {
       t.add(cookies.hunting_group, "Void");
-    } else if (!($('font:contains("You have been defeated"),a[href="map2.php"]').length)) {
+      t.save();
+    } else if (document.body.textContent.indexOf('You gained a total of') !== -1) {
       t.add(cookies.hunting_group, "NA");
+      t.save();
     }
-    t.save();
 
     $.ajax({
       url: 'inventory.php',
@@ -578,50 +574,125 @@ registerFunction(function huntingImprovements() {
   /****************************************************/
   //Method to display drop records for NPCs
   function showDrops() {
-    //Colours which the chart will iterate around, feel free to add new ones
-    var colorList = ["#F7464A", "#46BFBD", "#FDB45C", "#949FB1", "#4D5360"];
-    //Chart options, didn't do much aside from costomise the legend string
-    var options = {
-      segmentShowStroke: true,
-      legendTemplate: "<ul class=\"<%=name.toLowerCase()%>-legend\" style=\"padding:0; text-align:right\"><% for (var i=0; i<segments.length; i++){%><li style=\"margin-left:0px;list-style:none; font-size:9.88px\"><%if(segments[i].label){%><%=segments[i].label%> - <%=(segments[i].value/total*100).toFixed(2)%>%<%}%></li><%}%><br/>Total: <%=total%></ul>"
-    };
     var t = new hunts();
     t.load();
-    var currRow;
+    var style = create('style', {}, false, document.head);
+    style.textContent =
+      '#les-hunt-history{margin-top:8px;font-size:10px;line-height:1.35;text-align:left}' +
+      '#les-hunt-history-header{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}' +
+      '#les-hunt-history-summary{font-weight:bold}' +
+      '#les-hunt-history-copy{flex:none}' +
+      '#les-hunt-history table{width:100%;margin-top:4px;border-collapse:collapse}' +
+      '#les-hunt-history th,#les-hunt-history td{padding:2px 3px;border-top:1px solid #333}' +
+      '#les-hunt-history th{text-align:left;color:#bbb;font-weight:normal}' +
+      '#les-hunt-history th:nth-child(n+2),#les-hunt-history td:nth-child(n+2){text-align:right;white-space:nowrap}' +
+      '.les-hunt-history-item{position:relative;overflow:hidden}' +
+      '.les-hunt-history-bar{position:absolute;top:1px;bottom:1px;left:0;background:rgba(70,191,189,.25)}' +
+      '.les-hunt-history-label{position:relative}';
+
+    function percent(count, total) {
+      return total ? count / total * 100 : 0;
+    }
+
+    function csvCell(value) {
+      value = String(value);
+      return /[",\n]/.test(value) ? '"' + value.replace(/"/g, '""') + '"' : value;
+    }
+
+    function renderDropHistory(group) {
+      var existing = document.getElementById('les-hunt-history');
+      if (existing) {
+        existing.remove();
+      }
+
+      var story = document.getElementById('group-desc-story');
+      if (!story) {
+        return;
+      }
+
+      var history = create('div', { id: 'les-hunt-history' });
+      var record = t.hunts[group];
+      if (!record || !record.drops) {
+        history.textContent = 'No hunt history recorded for this group.';
+        story.insertAdjacentElement('afterend', history);
+        return;
+      }
+
+      var outcomes = Object.keys(record.drops).map(function(name) {
+        return { name: name, count: record.drops[name] };
+      }).filter(function(outcome) {
+        return outcome.count > 0;
+      }).sort(function(a, b) {
+        return b.count - a.count || a.name.localeCompare(b.name);
+      });
+      var total = outcomes.reduce(function(sum, outcome) {
+        return sum + outcome.count;
+      }, 0);
+      var noDrop = record.drops.NA || 0;
+      var voided = record.drops.Void || 0;
+      var dropCount = total - noDrop;
+      var itemOutcomes = outcomes.filter(function(outcome) {
+        return outcome.name !== 'NA' && outcome.name !== 'Void';
+      });
+      var maxItemCount = itemOutcomes.reduce(function(maximum, outcome) {
+        return Math.max(maximum, outcome.count);
+      }, 0);
+
+      var header = create('div', { id: 'les-hunt-history-header' }, false, history);
+      var summary = create('div', { id: 'les-hunt-history-summary' }, false, header);
+      summary.textContent = total + ' hunts · ' + dropCount + ' drops (' + percent(dropCount, total).toFixed(1) + '%) · ' + noDrop + ' no drop';
+      if (voided) {
+        summary.textContent += ' · ' + voided + ' voided';
+      }
+
+      var rows = [['group', 'outcome', 'count', 'percent_of_hunts']].concat(outcomes.map(function(outcome) {
+        var name = outcome.name === 'NA' ? 'No drop' : outcome.name;
+        return [group, name, outcome.count, percent(outcome.count, total).toFixed(2)];
+      }));
+      var csv = rows.map(function(row) {
+        return row.map(csvCell).join(',');
+      }).join('\n') + '\n';
+      var copyControl = createCopyControl(csv, 'Copy hunt history as CSV');
+      copyControl.id = 'les-hunt-history-copy';
+      header.appendChild(copyControl);
+
+      if (itemOutcomes.length) {
+        var table = create('table', {}, false, history);
+        var head = create('thead', {}, false, table);
+        var headRow = create('tr', {}, false, head);
+        ['Item', 'Count', 'Per hunt'].forEach(function(label) {
+          var heading = create('th', { scope: 'col' }, false, headRow);
+          heading.textContent = label;
+        });
+        var body = create('tbody', {}, false, table);
+        itemOutcomes.forEach(function(outcome) {
+          var row = create('tr', {}, false, body);
+          var item = create('td', { class: 'les-hunt-history-item' }, false, row);
+          var bar = create('span', { class: 'les-hunt-history-bar' }, false, item);
+          bar.style.width = outcome.count / maxItemCount * 100 + '%';
+          var label = create('span', { class: 'les-hunt-history-label' }, false, item);
+          label.textContent = outcome.name;
+          var count = create('td', {}, false, row);
+          count.textContent = outcome.count;
+          var rate = create('td', {}, false, row);
+          rate.textContent = percent(outcome.count, total).toFixed(1) + '%';
+        });
+      } else {
+        var empty = create('div', {}, false, history);
+        empty.textContent = 'No identified item drops yet.';
+      }
+
+      story.insertAdjacentElement('afterend', history);
+    }
+
     var OldpositionToElement = window.positionToElement;
-    //Modify the existing hunt detail update method so the chart & legend fit in and play nice
     window.positionToElement = function() {
       OldpositionToElement.apply(this, arguments);
-      //Run animation only when changing between different hunt groups, it's annoying when it's for same group w/ different level
-      options.animateRotate = currRow != arguments[0][0].dataset.row;
-      currRow = arguments[0][0].dataset.row;
-      var record = t.hunts[currRow];
-      if (record) {
-        var canvas = create("canvas", {
-          id: "huntRec",
-          width: 200,
-          height: 200
-        });
-        $('#group-desc-story').after(canvas);
-        var pieData = [];
-        var counter = 0;
-        for (var x in record.drops) {
-          if (x) {
-            counter++;
-            pieData.push({
-              label: x,
-              value: record.drops[x],
-              color: colorList[counter % colorList.length]
-            });
-          }
-        }
-        var dropChart = new Chart(document.getElementById("huntRec").getContext("2d")).Pie(pieData.sort(function(a, b) {
-          return b.value - a.value;
-        }), options);
-        $('#group-stats').append(dropChart.generateLegend());
+      var selectedGroup = arguments[0] && arguments[0][0];
+      if (selectedGroup && selectedGroup.dataset) {
+        renderDropHistory(selectedGroup.dataset.row);
       }
     };
-    //Update initial hunt group
     positionToElement(select, false);
   }
   /*****************************************************
