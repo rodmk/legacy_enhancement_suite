@@ -31,12 +31,10 @@
 // @require     https://raw.githubusercontent.com/nnnick/Chart.js/4aa274d5b2c82e28f7a7b2bb78db23b0429255a1/Chart.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js
-// @require     https://raw.githubusercontent.com/rodmk/locache/master/locache.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore.js
-// @require     https://cdnjs.cloudflare.com/ajax/libs/URI.js/1.11.2/URI.min.js
 // ==/UserScript==
-/* global $, jQuery,locache, Mousetrap, URI, ddrivetip, hideddrivetip, bar1,
+/* global $, jQuery, Mousetrap, ddrivetip, hideddrivetip, bar1,
 _,Chart, positionToElement, select, pic */
 
 
@@ -46,8 +44,6 @@ var loaderAnim = "data:image/gif;base64,R0lGODlhGAAYAPUAABgYF93d0auroSQkItLSxj4+
 // =============================================================================
 // Avoid conflicting with page's jQuery
 this.$ = this.jQuery = jQuery.noConflict(true);
-// Clear out expired cache values
-locache.cleanup();
 
 // =============================================================================
 //                            Primary Entry Point
@@ -180,56 +176,6 @@ registerFunction(function addItemHovercards() {
   });
 }, ["profile.php", "market2.php", "market3.php", "market6.php"]);
 
-/**
- * Fetches the earliest time (unixtime, in ms) one can hunt a special NPC.
- * Note that this is only going to be accurate to about the smallest time unit
- * present on the hunting page.
- */
-function getNextSpecialHuntTime() {
-  function computeNextSpecialHuntTime(data) {
-    // Check to see if player is capable of hunting special characters in
-    // the first place. If not, return a time far in the future.
-    if (!$('font:contains("Special Character Hunting")', data).length) {
-      return Number.MAX_VALUE;
-    }
-
-    var next_hunt_str = $('font:contains("can hunt again")', data).text();
-    var days = next_hunt_str.match(/(\d+) day/);
-    if (days) {
-      days = parseInt(days[1]);
-    }
-    var hours = next_hunt_str.match(/(\d+) hour/);
-    if (hours) {
-      hours = parseInt(hours[1]);
-    }
-    var minutes = next_hunt_str.match(/(\d+) minute/);
-    if (minutes) {
-      minutes = parseInt(minutes[1]);
-    }
-    var seconds = next_hunt_str.match(/(\d+) second/);
-    if (seconds) {
-      seconds = parseInt(seconds[1]);
-    }
-
-    var sec_until_hunt =
-      (days * SEC_IN_DAY) +
-      (hours * SEC_IN_HOUR) +
-      (minutes * SEC_IN_MINUTE) +
-      seconds;
-    var next_hunt_time = sec_until_hunt * MS_IN_SEC + Date.now();
-    return next_hunt_time;
-  }
-
-  var next_hunt_time = cachedFetchWithRefresh(
-    "hunting:specialhunttime",
-    6 * SEC_IN_HOUR,
-    "/hunting.php",
-    computeNextSpecialHuntTime
-  );
-
-  return next_hunt_time;
-}
-
 // =============================================================================
 //                                  Market
 // =============================================================================
@@ -289,16 +235,16 @@ function preserveScrollPosOnClick(elements) {
   var scroll_pos_cache_key = "scrollpos:" + location.pathname;
 
   // Restore scroll position
-  var scroll_pos = locache.session.get(scroll_pos_cache_key);
-  if (scroll_pos) {
-    $(window).scrollTop(scroll_pos);
-    locache.session.set(scroll_pos_cache_key, 0);
+  var scroll_pos = sessionStorage.getItem(scroll_pos_cache_key);
+  if (scroll_pos !== null) {
+    $(window).scrollTop(parseInt(scroll_pos, 10));
+    sessionStorage.removeItem(scroll_pos_cache_key);
   }
 
   // Register onclick handlers for elements
   $.each(elements, function() {
     $(this).click(function() {
-      locache.session.set(scroll_pos_cache_key, $(window).scrollTop());
+      sessionStorage.setItem(scroll_pos_cache_key, $(window).scrollTop());
     });
   });
 }
@@ -1124,87 +1070,8 @@ registerFunction(function addFlagUpload() {
 }, ['flag.php']);
 
 // =============================================================================
-//                                 Constants
-// =============================================================================
-var MS_IN_SEC = 1000;
-var SEC_IN_MINUTE = 60;
-var SEC_IN_HOUR = 60 * SEC_IN_MINUTE;
-var SEC_IN_DAY = 24 * SEC_IN_HOUR;
-
-// Legacy server runs on EST (UTC-5)
-var SERVER_UTC_OFFSET_HRS = -5;
-
-// =============================================================================
 //                                 Utilities
 // =============================================================================
-function cacheSet(key, value, timeout) {
-  if (value !== undefined) {
-    locache.set(sessionKey(key), value, timeout);
-  }
-}
-
-function cacheGet(key) {
-  return locache.get(sessionKey(key));
-}
-
-/**
- * Adds caching to a function. Fetches from cache if value is there, otherwise
- * generates, stores in cache, and returns results of fetch_fn.
- */
-function cachedFetch(key, timeout, fetch_fn) {
-  var value = cacheGet(key);
-  if (value === null) {
-    value = fetch_fn();
-    cacheSet(key, value, timeout);
-  }
-  return value;
-}
-
-/**
- * Fetching/caching function. If already at url, applies fn, and stores result
- * in cache. Otherwise, fetches key from cache if available, and if not in
- * cache then does an ajax get to url and applies fn to compute return value.
- */
-function cachedFetchWithRefresh(key, timeout, path, fn) {
-  var value;
-
-  if (window.location.pathname === path) {
-    value = fn(document);
-    if (value !== undefined) {
-      cacheSet(key, value, timeout);
-      return value;
-    }
-  }
-
-  value = cachedFetch(key, timeout, function() {
-    var ret = fn(syncGet(path));
-    return ret;
-  });
-
-  return value;
-}
-
-/**
- * Transforms a key such that it is only valid for the current session. Should
- * be used for all cache keys.
- */
-function sessionKey(key) {
-  var legacy_hash;
-  switch (URI(window.location.href).subdomain()) {
-    case 'www':
-      legacy_hash = document.cookie.match(/legacy_hash=(\w+)/)[1];
-      break;
-    case 'dev':
-      legacy_hash = document.cookie.match(/legacy_hash_dev=(\w+)/)[1];
-      break;
-  }
-  return key + ":" + legacy_hash;
-}
-
-function mod(n, m) {
-  return ((n % m) + m) % m;
-}
-
 /**
  * Does a synchronous (blocking) get and returns the result.
  */
