@@ -501,7 +501,7 @@ registerFunction(function huntingImprovements() {
   /*****************************************************
                       Hunt Recording Methods
   /****************************************************/
-  function hunts() {
+  function hunts(storageKey, initialValue) {
     function Record(data) {
       this.drops = data.drops || {};
       this.total = data.total || 0;
@@ -510,25 +510,54 @@ registerFunction(function huntingImprovements() {
         this.total++;
       };
     }
-    this.hunts = [];
+    this.hunts = initialValue;
     this.add = function(huntNumb, drop) {
       this.hunts[huntNumb] = new Record(this.hunts[huntNumb] || {});
       this.hunts[huntNumb].add(drop);
     };
     this.save = function() {
-      localStorage.hunts = JSON.stringify(this.hunts);
+      localStorage.setItem(storageKey, JSON.stringify(this.hunts));
     };
     this.load = function() {
-      var toLoad = localStorage.hunts;
+      var toLoad = localStorage.getItem(storageKey);
       if (!toLoad) return;
       this.hunts = JSON.parse(toLoad);
     };
+  }
+
+  function getHuntOutcome() {
+    var result = $('font:contains("Item Found")');
+    var itemMatch = result.text().match(/Item Found\s*:\s*(.*?)\.\s*$/);
+    if (itemMatch) {
+      return itemMatch[1];
+    }
+    if ($('font:contains("An item was dropped but your inventory was full, so it was sent to the void.")').length) {
+      return 'Void';
+    }
+    if (document.body.textContent.indexOf('You gained a total of') !== -1) {
+      return 'NA';
+    }
+    return null;
+  }
+
+  function recordHuntResult(storageKey, initialValue, huntKey) {
+    var outcome = getHuntOutcome();
+    if (outcome === null || huntKey === null || huntKey === undefined || huntKey === '') {
+      return;
+    }
+    var history = new hunts(storageKey, initialValue);
+    history.load();
+    history.add(huntKey, outcome);
+    history.save();
   }
 
   /*****************************************************
                       Hunting Page Methods
   /****************************************************/
   function enhanceHuntResult() {
+    var cookies = getCookies();
+    recordHuntResult('hunts', [], cookies.hunting_group);
+
     var huntAgain = Array.from(document.querySelectorAll('button, input[type="button"], input[type="submit"]')).find(function(control) {
       return (control.textContent || control.value || '').trim() === 'Hunt Again';
     });
@@ -545,22 +574,6 @@ registerFunction(function huntingImprovements() {
       controlsRow.parentNode.insertBefore(inventoryRow, controlsRow.nextSibling);
     }
 
-    var cookies = getCookies();
-    var t = new hunts();
-    t.load();
-    var result = $('font:contains("Item Found")');
-    var itemMatch = result.text().match(/Item Found\s*:\s*(.*?)\.\s*$/);
-    if (itemMatch) {
-      t.add(cookies.hunting_group, itemMatch[1]);
-      t.save();
-    } else if ($('font:contains("An item was dropped but your inventory was full, so it was sent to the void.")').length) {
-      t.add(cookies.hunting_group, "Void");
-      t.save();
-    } else if (document.body.textContent.indexOf('You gained a total of') !== -1) {
-      t.add(cookies.hunting_group, "NA");
-      t.save();
-    }
-
     $.ajax({
       url: 'inventory.php',
       async: true,
@@ -574,21 +587,30 @@ registerFunction(function huntingImprovements() {
   /****************************************************/
   //Method to display drop records for NPCs
   function showDrops() {
-    var t = new hunts();
+    var t = new hunts('hunts', []);
     t.load();
+    var special = new hunts('specialHunts', {});
+    special.load();
     var style = create('style', {}, false, document.head);
     style.textContent =
       '#les-hunt-history{margin-top:8px;font-size:10px;line-height:1.35;text-align:left}' +
-      '#les-hunt-history-header{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}' +
-      '#les-hunt-history-summary{font-weight:bold}' +
-      '#les-hunt-history-copy{flex:none}' +
-      '#les-hunt-history table{width:100%;margin-top:4px;border-collapse:collapse}' +
-      '#les-hunt-history th,#les-hunt-history td{padding:2px 3px;border-top:1px solid #333}' +
-      '#les-hunt-history th{text-align:left;color:#bbb;font-weight:normal}' +
-      '#les-hunt-history th:nth-child(n+2),#les-hunt-history td:nth-child(n+2){text-align:right;white-space:nowrap}' +
+      '.les-hunt-history{font-size:10px;line-height:1.35;text-align:left}' +
+      '.les-hunt-history-header{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}' +
+      '.les-hunt-history-summary{font-weight:bold}' +
+      '.les-hunt-history-copy{flex:none}' +
+      '.les-hunt-history table{width:100%;margin-top:4px;border-collapse:collapse}' +
+      '.les-hunt-history th,.les-hunt-history td{padding:2px 3px;border-top:1px solid #333}' +
+      '.les-hunt-history th{text-align:left;color:#bbb;font-weight:normal}' +
+      '.les-hunt-history th:nth-child(n+2),.les-hunt-history td:nth-child(n+2){text-align:right;white-space:nowrap}' +
+      '.les-hunt-history-items>summary{margin-top:4px;cursor:pointer;font-weight:bold}' +
       '.les-hunt-history-item{position:relative;overflow:hidden}' +
       '.les-hunt-history-bar{position:absolute;top:1px;bottom:1px;left:0;background:rgba(70,191,189,.25)}' +
-      '.les-hunt-history-label{position:relative}';
+      '.les-hunt-history-label{position:relative}' +
+      '#les-special-hunt-history{box-sizing:border-box;margin-top:8px;border:1px solid #333;text-align:left}' +
+      '#les-special-hunt-history>summary{padding:4px 6px;color:#d6a928;cursor:pointer;font-weight:bold}' +
+      '#les-special-hunt-history>details{margin:0 6px;border-top:1px solid #333;padding:3px 0}' +
+      '#les-special-hunt-history>details>summary{cursor:pointer;font-weight:bold}' +
+      '#les-special-hunt-history .les-hunt-history{margin:4px 6px}';
 
     function percent(count, total) {
       return total ? count / total * 100 : 0;
@@ -599,23 +621,11 @@ registerFunction(function huntingImprovements() {
       return /[",\n]/.test(value) ? '"' + value.replace(/"/g, '""') + '"' : value;
     }
 
-    function renderDropHistory(group) {
-      var existing = document.getElementById('les-hunt-history');
-      if (existing) {
-        existing.remove();
-      }
-
-      var story = document.getElementById('group-desc-story');
-      if (!story) {
-        return;
-      }
-
-      var history = create('div', { id: 'les-hunt-history' });
-      var record = t.hunts[group];
+    function createDropHistory(record, huntName, collapseItems) {
+      var history = create('div', { class: 'les-hunt-history' });
       if (!record || !record.drops) {
-        history.textContent = 'No hunt history recorded for this group.';
-        story.insertAdjacentElement('afterend', history);
-        return;
+        history.textContent = 'No hunt history recorded.';
+        return history;
       }
 
       var outcomes = Object.keys(record.drops).map(function(name) {
@@ -638,26 +648,31 @@ registerFunction(function huntingImprovements() {
         return Math.max(maximum, outcome.count);
       }, 0);
 
-      var header = create('div', { id: 'les-hunt-history-header' }, false, history);
-      var summary = create('div', { id: 'les-hunt-history-summary' }, false, header);
+      var header = create('div', { class: 'les-hunt-history-header' }, false, history);
+      var summary = create('div', { class: 'les-hunt-history-summary' }, false, header);
       summary.textContent = total + ' hunts · ' + dropCount + ' drops (' + percent(dropCount, total).toFixed(1) + '%) · ' + noDrop + ' no drop';
       if (voided) {
         summary.textContent += ' · ' + voided + ' voided';
       }
 
-      var rows = [['group', 'outcome', 'count', 'percent_of_hunts']].concat(outcomes.map(function(outcome) {
+      var rows = [['hunt', 'outcome', 'count', 'percent_of_hunts']].concat(outcomes.map(function(outcome) {
         var name = outcome.name === 'NA' ? 'No drop' : outcome.name;
-        return [group, name, outcome.count, percent(outcome.count, total).toFixed(2)];
+        return [huntName, name, outcome.count, percent(outcome.count, total).toFixed(2)];
       }));
       var csv = rows.map(function(row) {
         return row.map(csvCell).join(',');
       }).join('\n') + '\n';
       var copyControl = createCopyControl(csv, 'Copy hunt history as CSV');
-      copyControl.id = 'les-hunt-history-copy';
+      copyControl.classList.add('les-hunt-history-copy');
       header.appendChild(copyControl);
 
       if (itemOutcomes.length) {
-        var table = create('table', {}, false, history);
+        var tableParent = history;
+        if (collapseItems) {
+          tableParent = create('details', { class: 'les-hunt-history-items' }, false, history);
+          create('summary', {}, 'Drops · ' + itemOutcomes.length + (itemOutcomes.length === 1 ? ' item type' : ' item types'), tableParent);
+        }
+        var table = create('table', {}, false, tableParent);
         var head = create('thead', {}, false, table);
         var headRow = create('tr', {}, false, head);
         ['Item', 'Count', 'Per hunt'].forEach(function(label) {
@@ -682,7 +697,65 @@ registerFunction(function huntingImprovements() {
         empty.textContent = 'No identified item drops yet.';
       }
 
+      return history;
+    }
+
+    function renderDropHistory(group) {
+      var existing = document.getElementById('les-hunt-history');
+      if (existing) {
+        existing.remove();
+      }
+
+      var story = document.getElementById('group-desc-story');
+      if (!story) {
+        return;
+      }
+
+      var history = createDropHistory(t.hunts[group], group, true);
+      history.id = 'les-hunt-history';
       story.insertAdjacentElement('afterend', history);
+    }
+
+    function renderSpecialDropHistories() {
+      var links = Array.from(document.querySelectorAll('a[href*="p=2"][href*="h="]'));
+      if (!links.length) {
+        return;
+      }
+
+      var targets = links.map(function(link) {
+        return new URL(link.href, location.href).searchParams.get('h');
+      }).filter(function(target, index, allTargets) {
+        return target && allTargets.indexOf(target) === index;
+      });
+      var section = create('details', { id: 'les-special-hunt-history' });
+      create('summary', {}, 'Special hunt history', section);
+      targets.forEach(function(target) {
+        var details = create('details', {}, false, section);
+        var summary = create('summary', {}, false, details);
+        var record = special.hunts[target];
+        var total = record && record.drops ? Object.keys(record.drops).reduce(function(sum, outcome) {
+          return sum + record.drops[outcome];
+        }, 0) : 0;
+        summary.textContent = target + (total ? ' · ' + total + (total === 1 ? ' hunt' : ' hunts') : '');
+        details.appendChild(createDropHistory(record, target, false));
+      });
+      var specialHuntList = links[0].parentElement;
+      while (specialHuntList && !links.every(function(link) {
+        return specialHuntList.contains(link);
+      })) {
+        specialHuntList = specialHuntList.parentElement;
+      }
+      if (specialHuntList && /^(TBODY|THEAD|TFOOT|TR|TD)$/.test(specialHuntList.tagName)) {
+        specialHuntList = specialHuntList.closest('table');
+      }
+      if (specialHuntList) {
+        var specialHuntBounds = specialHuntList.getBoundingClientRect();
+        section.style.width = specialHuntBounds.width + 'px';
+      }
+      (specialHuntList || links[links.length - 1].parentElement).insertAdjacentElement('afterend', section);
+      if (specialHuntList) {
+        section.style.marginLeft = specialHuntBounds.left - section.getBoundingClientRect().left + 'px';
+      }
     }
 
     var OldpositionToElement = window.positionToElement;
@@ -693,6 +766,7 @@ registerFunction(function huntingImprovements() {
         renderDropHistory(selectedGroup.dataset.row);
       }
     };
+    renderSpecialDropHistories();
     positionToElement(select, false);
   }
   /*****************************************************
@@ -703,11 +777,14 @@ registerFunction(function huntingImprovements() {
     case '/hunting3.php':
       enhanceHuntResult();
       break;
+    case '/hunting5.php':
+      recordHuntResult('specialHunts', {}, new URLSearchParams(location.search).get('h'));
+      break;
     case '/hunting.php':
       showDrops();
       break;
   }
-}, ['hunting.php', 'hunting3.php']);
+}, ['hunting.php', 'hunting3.php', 'hunting5.php']);
 
 
 // =============================================================================
