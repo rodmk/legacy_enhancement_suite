@@ -539,7 +539,13 @@ registerFunction(function huntingImprovements() {
       }, {});
   }
   function getInventoryFreeSpace(html) {
-    return $(html).find('.item-grid:not(.equipped) .item_slot:not(:has(img))').length;
+    var inventory = $(html);
+    // Inventory markup differs between game hosts; support both slot grids and legacy tables.
+    var currentGrids = inventory.find('.item-grid:not(.equipped)');
+    if (currentGrids.length) {
+      return currentGrids.find('.item_slot:not(:has(img))').length;
+    }
+    return inventory.find('.itemgrid:not(.equipped) td:not(:has(img))').length;
   }
   /*****************************************************
                       Hunt Recording Methods
@@ -613,7 +619,7 @@ registerFunction(function huntingImprovements() {
     t.save();
 
     $.ajax({
-      url: 'inventory.php?m=0',
+      url: 'inventory.php',
       async: true,
       success: function(data) {
         $('#invSpace').text(getInventoryFreeSpace(data));
