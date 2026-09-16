@@ -861,7 +861,7 @@ registerFunction(function addFlagUpload() {
 
   create('link', {
     rel: 'stylesheet',
-    href: 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css'
+    href: 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css'
   }, false, document.head);
   create('style', {
     type: 'text/css'
