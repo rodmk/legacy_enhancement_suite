@@ -471,41 +471,7 @@ function addTop10CopyButton(table_title) {
 // =============================================================================
 //                                 Combat
 // =============================================================================
-/**
- * FEATURE: Make attack buttons clickable once (prevents multi-attack errors).
- * For those of us who like frantically mashing 'attack' and think it's absurd
- * to hit the 'multi-attack' error page as a result.
- */
-registerFunction(function preventMultiAttack() {
-  // We simply disable the button after clicking on it once. I don't know which
-  // buttons can cause multi-attack errors, so to be safe I fixed all attack
-  // buttons I could find.
-  /* jshint multistr:true */
-  var atk_btn = $('button[value="0"],\
-                   button[value="1"],\
-                   button[value="2"],\
-                   button[value="3"]');
-  atk_btn.each(function() {
-    var btn = $(this);
-    var disable_btn = function() {
-      btn.prop('disabled', 'disabled');
-    };
-
-    // Handle form submission vs button onclick differently, since for forms we
-    // want to disable button on submit (post-submission), whereas for buttons
-    // we want to disable it on click (after the native onclick handler fires)
-    switch ($(this).prop('type')) {
-      case 'submit':
-        $('form').submit(disable_btn);
-        break;
-      case 'button':
-        btn.click(disable_btn);
-        break;
-    }
-  });
-}, ["fight\\d*.php", "hunting\\d*.php", "map2.php"]);
-
-registerFunction(function setUpPlayerCombat() {
+registerFunction(function prefillPlayerCombatTarget() {
   // FEATURE: Pre-fill attack box with first name from list.
   var observer = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
@@ -538,12 +504,6 @@ registerFunction(function setUpPlayerCombat() {
       characterData: true
     }
   );
-
-  // FEATURE: Show 'fight player' search results by default.
-  var search_btn = $('#search');
-  if (search_btn.size() === 1) {
-    search_btn.click();
-  }
 }, ['fight.php']);
 
 // =============================================================================

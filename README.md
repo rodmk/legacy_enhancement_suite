@@ -50,8 +50,6 @@ As long as you are not in a text box and press "A", the item will be added to th
 - Hovering over a Gang Alert now shows a 3x3 grid of the area that was Alerted.
 
 ### Combat
-- Attack Buttons are now rendered un-clickable when clicked once. This prevents multiple clicks which may break fights (multi-attack error).
-- Show the combat search results page by default.
 - Automatically fill in the first combat search result in the target box.
 
 Acknowledgements
