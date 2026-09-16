@@ -361,70 +361,110 @@ registerFunction(function addMarketSearchTooltips() {
 //                               Top 10 Lists
 // =============================================================================
 /**
- * FEATURE: Adds links to easily-copyable weekly top 10 data.
+ * FEATURE: Adds buttons to copy overall top 10 data.
  */
 registerFunction(function addOverallTop10ExportButtons() {
-  addTop10ExportButton("Highest Levels");
-  addTop10ExportButton("Highest Wins");
-  addTop10ExportButton("Highest Losses");
-  addTop10ExportButton("Achievements Score");
+  addTop10CopyButton("Highest Levels");
+  addTop10CopyButton("Highest Wins");
+  addTop10CopyButton("Highest Losses");
+  addTop10CopyButton("Achievements Score");
 }, ["highrecords.php"]);
 
 /**
- * FEATURE: Adds links to easily-copyable weekly top 10 data.
+ * FEATURE: Adds buttons to copy weekly top 10 data.
  */
 registerFunction(function addWeeklyTop10ExportButtons() {
-  addTop10ExportButton("Most Exp Earned");
-  addTop10ExportButton("Most Wins");
-  addTop10ExportButton("Most Losses");
-  addTop10ExportButton("Most Hunting Points");
-  addTop10ExportButton("Most Warfare Points");
-  addTop10ExportButton("Most Tokens Earned");
+  addTop10CopyButton("Most Exp Earned");
+  addTop10CopyButton("Most Wins");
+  addTop10CopyButton("Most Losses");
+  addTop10CopyButton("Most Hunting Points");
+  addTop10CopyButton("Most Warfare Points");
+  addTop10CopyButton("Most Tokens Earned");
 }, ["weekrecords.php"]);
 
 /**
- * FEATURE: Adds links to easily-copyable gang top 10 data.
+ * FEATURE: Adds buttons to copy gang top 10 data.
  */
 registerFunction(function addGangTop10ExportButtons() {
-  addTop10ExportButton("Gang List : Highest Levels");
-  addTop10ExportButton("Gang List : Last Week\'s Warfare Points");
+  addTop10CopyButton("Gang List : Highest Levels");
+  addTop10CopyButton("Gang List : Last Week\'s Warfare Points");
 }, ["gangs2_4.php"]);
 
-/**
- * Given a table title, adds a button/link to copyable top 10 data.
- */
-function addTop10ExportButton(table_title) {
-  // Read the scores from the document and parse them
-  var table = $('table:contains("' + table_title + '")');
-  var players = table
-    .find('a[href*="profile.php"]')
-    .map(function(k, v) {
-      return $(v).text();
-    });
-  var scores = table
-    .find('font.colortext')[0]
-    .innerHTML.split('<br>');
-
-  // Generate the text to be exported
-  var export_text = "";
-  for (var i = 0; i < 10; i++) {
-    export_text = export_text + (i + 1) + ';' + players[i] + ';' + scores[i] + '\n';
+function addTop10CopyButton(table_title) {
+  var table = Array.from(document.querySelectorAll('table')).find(function(candidate) {
+    return candidate.rows.length &&
+      candidate.rows[0].textContent.indexOf(table_title) !== -1;
+  });
+  if (!table) {
+    return;
   }
-  export_text = encodeURIComponent(export_text);
-  var data = 'data:text/plain,' + export_text;
 
-  // Add icon-link to document with exported text
-  var link = $("<a>")
-    .attr('href', data)
-    .append(fontAwesomeIcon('fa-file-text'))
-    .css({
-      'float': 'right',
-      'position': 'relative',
-      'right': '5px',
+  var players = Array.from(table.querySelectorAll('a[href*="profile.php"]')).map(function(link) {
+    return link.textContent.trim();
+  });
+  var score_column = table.querySelector('font.colortext');
+  if (!score_column) {
+    return;
+  }
+
+  var scores = score_column.innerText.split('\n').map(function(score) {
+    return score.trim();
+  }).filter(Boolean);
+  var row_count = Math.min(players.length, scores.length);
+  var export_text = Array.from({ length: row_count }, function(_, index) {
+    var score = scores[index].replace(/,/g, '');
+    return [index + 1, players[index], score].map(function(value) {
+      value = String(value);
+      return /[",\n]/.test(value) ? '"' + value.replace(/"/g, '""') + '"' : value;
+    }).join(',');
+  }).join('\n') + '\n';
+
+  var copy_control = document.createElement('span');
+  copy_control.style.cssFloat = 'right';
+  copy_control.style.marginRight = '5px';
+  copy_control.style.position = 'relative';
+
+  var copy_button = document.createElement('button');
+  copy_button.type = 'button';
+  copy_button.textContent = '📋';
+  copy_button.title = 'Copy ranking data as CSV';
+  copy_button.setAttribute('aria-label', copy_button.title);
+  copy_button.style.padding = '0 3px';
+  copy_button.style.border = '0';
+  copy_button.style.background = 'none';
+  copy_button.style.cursor = 'pointer';
+  copy_button.style.lineHeight = '1';
+
+  var copy_status = document.createElement('span');
+  copy_status.setAttribute('role', 'status');
+  copy_status.style.position = 'absolute';
+  copy_status.style.top = '100%';
+  copy_status.style.right = '0';
+  copy_status.style.zIndex = '1';
+  copy_status.style.whiteSpace = 'nowrap';
+  copy_status.style.padding = '2px 4px';
+  copy_status.style.background = '#111';
+  copy_status.style.color = '#fff';
+  var status_timeout;
+  copy_button.addEventListener('click', function() {
+    var copy_operation = navigator.clipboard ?
+      navigator.clipboard.writeText(export_text) :
+      Promise.reject();
+    copy_operation.then(function() {
+      copy_status.textContent = 'Copied to clipboard';
+    }).catch(function() {
+      copy_status.textContent = 'Copy failed';
+    }).finally(function() {
+      window.clearTimeout(status_timeout);
+      status_timeout = window.setTimeout(function() {
+        copy_status.textContent = '';
+      }, 1500);
     });
+  });
 
-  var title = $('font:contains("' + table_title + '")');
-  title.after(link);
+  copy_control.appendChild(copy_button);
+  copy_control.appendChild(copy_status);
+  table.rows[0].cells[0].appendChild(copy_control);
 }
 
 
@@ -1513,19 +1553,6 @@ function sessionKey(key) {
       break;
   }
   return key + ":" + legacy_hash;
-}
-
-/**
- * Returns a font awesome icon. Loads required CSS to page if necessary.
- */
-function fontAwesomeIcon(klass) {
-  // Load CSS stylesheet if not loaded yet.
-  if (!$('link[href*="font-awesome.min.css"]').length) {
-    $('head').append(
-      $('<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">')
-    );
-  }
-  return $('<i class="fa ' + klass + '"></i>');
 }
 
 function mod(n, m) {
