@@ -206,31 +206,42 @@ registerFunction(function setUpStandAndStorage() {
 registerFunction(function autoUpdateStandPricing() {
   // FEATURE: When selecting items from your inventory, if you already have that
   // item in your stand, copy over the price/currency for it.
-  var item_selector = $('select[name="item"]');
-  item_selector.change(function() {
-    var selected_item = $.trim($(this).find("option:selected").text());
-    if (!selected_item) {
+  var itemSelector = document.querySelector('select[name="item"]');
+  var priceInput = document.querySelector('input[name="price"]');
+  var currencySelector = document.querySelector('select[name="currency"]');
+  if (!itemSelector || !priceInput || !currencySelector) {
+    return;
+  }
+
+  function updateStandPricing() {
+    var selectedOption = itemSelector.options[itemSelector.selectedIndex];
+    var selectedItem = selectedOption ? selectedOption.textContent.trim() : '';
+    if (!selectedItem) {
       return;
     }
 
-    var price_text = $("font.darktext > font:contains('" + selected_item + "')")
-      .filter(function() { return $(this).text() === selected_item; })
-      .closest('tbody')
-      .find("td:contains('each')");
+    var itemName = Array.from(document.querySelectorAll('font.darktext > font')).find(function(font) {
+      return font.textContent.trim() === selectedItem;
+    });
+    var itemRows = itemName && itemName.closest('tbody');
+    var priceCell = itemRows && Array.from(itemRows.querySelectorAll('td')).find(function(cell) {
+      return cell.textContent.indexOf('each') !== -1;
+    });
+    var match = priceCell && priceCell.textContent.trim().match(/([\d,]+)([cp]) each/);
     var num, currency;
-    if (price_text.size()) {
-      price_text = $.trim(price_text.first().text());
-      var match = price_text.match(/([\d,]+)([cp]) each/);
+    if (match) {
       num = match[1].replace(/,/g, '');
       currency = match[2];
     } else {
-      num = null;
+      num = '';
       currency = 'c';
     }
-    $('input[name="price"]').val(num);
-    $('select[name="currency"]').val(currency === 'c' ? 1 : 2);
-  });
-  item_selector.change();
+    priceInput.value = num;
+    currencySelector.value = currency === 'c' ? '1' : '2';
+  }
+
+  itemSelector.addEventListener('change', updateStandPricing);
+  updateStandPricing();
 }, ["market3.php"]);
 
 /**
