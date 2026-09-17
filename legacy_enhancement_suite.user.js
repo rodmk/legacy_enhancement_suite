@@ -1191,26 +1191,25 @@ registerFunction(function addFlagUpload() {
   window.addEventListener("paste", onPasteHandler);
   //Show/Hide the Raw Canvas from view
   //Mainly for when the image is larger than the window, or file upload is difficult to see
-  $('#rawImgHide').click(function() {
-    $('#container').slideToggle('slow');
+  document.getElementById('rawImgHide').addEventListener('click', function() {
+    container.style.display = getComputedStyle(container).display === 'none' ? 'block' : 'none';
   });
   //Reset the capture div back to default size
-  $('#reset').click(function() {
-    var area = document.getElementById('getArea');
+  document.getElementById('reset').addEventListener('click', function() {
     area.style.height = "30px";
     area.style.width = "40px";
   });
   //Aspect ratio can only be enabled/disabled when the capture div is resizable
-  $('#resizeToggle').click(function() {
+  document.getElementById('resizeToggle').addEventListener('click', function() {
     resizeHandle.style.display = this.checked ? 'block' : 'none';
     document.getElementById('Aratio').disabled = !this.checked;
   });
   //Image upload from local machine to raw canvas
-  $('#imageUpload').change(function() {
-    if (document.getElementById("imageUpload").files.length === 0) {
+  document.getElementById('imageUpload').addEventListener('change', function() {
+    if (this.files.length === 0) {
       return;
     }
-    var flag = document.getElementById("imageUpload").files[0],
+    var flag = this.files[0],
       reader;
     if (!flag.type.match('image.*')) {
       alert("Not an image");
@@ -1236,7 +1235,7 @@ registerFunction(function addFlagUpload() {
     outctx.drawImage(rawcanvas, x, y, area.clientWidth, area.clientHeight, 0, 0, out.width, out.height);
   }
   //Sent image from preview canvas to legacy page, adjusting page variables and 'pixel' block backgrounds
-  $('#toFlag').click(function() {
+  document.getElementById('toFlag').addEventListener('click', function() {
     var canvas = document.getElementById('flagOut'),
       context = canvas.getContext('2d'),
       w = canvas.width,
@@ -1254,15 +1253,15 @@ registerFunction(function addFlagUpload() {
                       Effect Addons
   /****************************************************/
   //Hide/Show effect options
-  $('#edit').click(function() {
-    $('#editPanel').slideToggle();
+  document.getElementById('edit').addEventListener('click', function() {
+    edit.style.display = getComputedStyle(edit).display === 'none' ? 'block' : 'none';
   });
   //Perform greyscale effect on output flag
-  $('#greyscale').click(function() {
+  document.getElementById('greyscale').addEventListener('click', function() {
     document.getElementById('flagOut').greyscale();
   });
   //Invert output flag colours
-  $('#invert').click(function() {
+  document.getElementById('invert').addEventListener('click', function() {
     document.getElementById('flagOut').invert();
   });
 
