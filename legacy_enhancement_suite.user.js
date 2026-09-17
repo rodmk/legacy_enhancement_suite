@@ -179,7 +179,9 @@ registerFunction(function addItemHovercards() {
 // =============================================================================
 registerFunction(function setUpStandAndStorage() {
   // FEATURE: Auto-check add all items with the same price by default.
-  $('input[name="multi"]').prop('checked', true);
+  document.querySelectorAll('input[name="multi"]').forEach(function(input) {
+    input.checked = true;
+  });
 
   // FEATURE: Bind 'a' to 'add item' button.
   var item_added = false;
@@ -187,16 +189,18 @@ registerFunction(function setUpStandAndStorage() {
     if (item_added) {
       return;
     }
-    item_added = true;
-    var add_btn = $('input[value="Add Item"], input[value="Store Item"]');
-    add_btn.click();
+    var addButton = document.querySelector('input[value="Add Item"], input[value="Store Item"]');
+    if (addButton) {
+      item_added = true;
+      addButton.click();
+    }
   });
 
   // FEATURE: Maintain scroll position after taking item from stand.
-  var take_buttons = $('input[value="Take"], button').filter(function() {
-    return $.trim($(this).val() || $(this).text()) === 'Take';
+  var takeButtons = Array.from(document.querySelectorAll('input[value="Take"], button')).filter(function(button) {
+    return (button.value || button.textContent).trim() === 'Take';
   });
-  preserveScrollPosOnClick(take_buttons);
+  preserveScrollPosOnClick(takeButtons);
 }, ["market3.php", "market6.php"]);
 
 registerFunction(function autoUpdateStandPricing() {
@@ -240,14 +244,14 @@ function preserveScrollPosOnClick(elements) {
   // Restore scroll position
   var scroll_pos = sessionStorage.getItem(scroll_pos_cache_key);
   if (scroll_pos !== null) {
-    $(window).scrollTop(parseInt(scroll_pos, 10));
+    window.scrollTo(0, parseInt(scroll_pos, 10));
     sessionStorage.removeItem(scroll_pos_cache_key);
   }
 
   // Register onclick handlers for elements
-  $.each(elements, function() {
-    $(this).click(function() {
-      sessionStorage.setItem(scroll_pos_cache_key, $(window).scrollTop());
+  elements.forEach(function(element) {
+    element.addEventListener('click', function() {
+      sessionStorage.setItem(scroll_pos_cache_key, window.scrollY);
     });
   });
 }
