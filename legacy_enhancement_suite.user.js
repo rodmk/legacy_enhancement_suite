@@ -427,37 +427,40 @@ function createCopyControl(text, title) {
 // =============================================================================
 registerFunction(function prefillPlayerCombatTarget() {
   // FEATURE: Pre-fill attack box with first name from list.
+  var searchbox = document.getElementById('searchbox');
+  var target = document.getElementById('target');
+  var begin = document.getElementById('begin');
+  if (!searchbox || !target) {
+    return;
+  }
+
+  searchbox.addEventListener('click', function(event) {
+    var link = event.target.closest('a');
+    if (link && link.textContent.trim() === 'Back to Search Setup') {
+      target.value = '';
+    }
+  });
+
   var observer = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
-      if (mutation.addedNodes.length) {
-        // Set first player row as target
-        if (mutation.target.className === "search_row player_row") {
-          if (!$('#target').val()) {
-            var player_name = $(mutation.addedNodes[0]).text().trim();
-            $('#target').val(player_name);
-            $('#begin').removeAttr('disabled');
-          }
-        }
-
-        // Add click handler to 'back to search link' to clear target box
-        if (mutation.target.className === "search_row") {
-          var back_link = $(mutation.addedNodes).find('a:contains("Back to Search Setup")');
-          if (back_link.length) {
-            back_link.click(function() {
-              $('#target').val('');
-            });
-          }
+      if (
+        mutation.addedNodes.length &&
+        mutation.target.classList &&
+        mutation.target.classList.contains('search_row') &&
+        mutation.target.classList.contains('player_row') &&
+        !target.value
+      ) {
+        target.value = mutation.addedNodes[0].textContent.trim();
+        if (begin) {
+          begin.disabled = false;
         }
       }
     });
   });
-  observer.observe(
-    $('#searchbox')[0], {
-      subtree: true,
-      childList: true,
-      characterData: true
-    }
-  );
+  observer.observe(searchbox, {
+    subtree: true,
+    childList: true
+  });
 }, ['fight.php']);
 
 // =============================================================================
