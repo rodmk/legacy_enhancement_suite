@@ -274,50 +274,98 @@ function preserveScrollPosOnClick(elements) {
 registerFunction(function addMarketSearchTooltips() {
   var markets = {};
 
-  //Select all item rows from search
-  $('table.maintable:contains(Name)').each(function() {
-    //Scrape item name, price & trades from row
-    var name = $(this).find('td:contains("Name")').next().text().trim();
-    var price = $(this).find('td:contains("Price")').next().text().trim();
-    var trades = $(this).find('td:contains("Trades")').next().text().trim();
-    var link = $(this).find('a:has(img)').attr('href');
+  function fieldValue(table, label) {
+    var labelCell = Array.from(table.querySelectorAll('td')).find(function(cell) {
+      return cell.textContent.indexOf(label) !== -1;
+    });
+    return labelCell && labelCell.nextElementSibling
+      ? labelCell.nextElementSibling.textContent.trim()
+      : '';
+  }
+
+  function modelessUrl(link) {
+    var match = link && link.match(/'([^']+)'/);
+    return match ? match[1] : null;
+  }
+
+  Array.from(document.querySelectorAll('table.maintable')).filter(function(table) {
+    return table.textContent.indexOf('Name') !== -1;
+  }).forEach(function(table) {
+    var name = fieldValue(table, 'Name');
+    var price = fieldValue(table, 'Price');
+    var trades = fieldValue(table, 'Trades');
+    var itemImage = table.querySelector('a img[src*="items"]');
+    var marketLink = itemImage && itemImage.closest('a');
+    var link = marketLink && marketLink.getAttribute('href');
+    if (!link || !itemImage) {
+      return;
+    }
     var owner = link.split('=').pop();
 
-    //Determine key & count amount of similar items on a given market
     var key = [owner, name, price, trades].join(':');
-    markets[key] = markets.hasOwnProperty(key) ? markets[key] + 1 : 0;
+    markets[key] = Object.prototype.hasOwnProperty.call(markets, key) ? markets[key] + 1 : 0;
     var numb = markets[key];
 
-    //Image hover to show item details
-    var item_tooltip;
-    $(this).find('img[src*="items"]')
-      .mouseover(function() {
-        if (!item_tooltip) {
-          var market_page = syncGet(link);
-          //Find matching item as hovered over
-          var match = $('table[cellpadding="1"]', market_page)
-            .filter(function() {
-              return (
-                $(this).find('td:contains("Name")').next().text().trim() === name &&
-                $(this).find('td:contains("Price")').next().text().trim() === price + ' each' &&
-                $(this).find('td:contains("Trades")').next().text().trim() === trades
-              );
-            })
-            .find('a:has(img)');
-          //Make sure the item is still on the market since searching
-          if (match.length) {
-            //Select the nth similar item on the market under the above attributes
-            var item_url = match.eq(numb).attr('href').match(/'(.*)'/).pop();
-            var item_data = syncGet(item_url);
-            item_tooltip = $(item_data).filter('center').html();
-          } else {
-            item_tooltip = 'Error - Item Cannot Be Found';
-          }
-        }
+    var itemTooltip;
+    var itemRequest;
+    itemImage.addEventListener('mouseenter', function() {
+      if (itemTooltip) {
+        ddrivetip(itemTooltip, 450);
+        return;
+      }
 
-        ddrivetip(item_tooltip, 450);
-      })
-      .mouseout(hideddrivetip);
+      ddrivetip('<img src="' + loaderAnim + '" />', 30);
+      if (!itemRequest) {
+        itemRequest = fetch(link)
+          .then(function(response) {
+            if (!response.ok) {
+              throw new Error('Unable to load market');
+            }
+            return response.text();
+          })
+          .then(function(marketHtml) {
+            var marketPage = new DOMParser().parseFromString(marketHtml, 'text/html');
+            var matches = Array.from(marketPage.querySelectorAll('table[cellpadding="1"]')).filter(function(itemTable) {
+              return (
+                fieldValue(itemTable, 'Name') === name &&
+                fieldValue(itemTable, 'Price') === price + ' each' &&
+                fieldValue(itemTable, 'Trades') === trades
+              );
+            }).map(function(itemTable) {
+              var image = itemTable.querySelector('a img');
+              return image && image.closest('a');
+            }).filter(Boolean);
+            var itemUrl = matches[numb] && modelessUrl(matches[numb].getAttribute('href'));
+            if (!itemUrl) {
+              throw new Error('Item cannot be found');
+            }
+            return fetch(itemUrl);
+          })
+          .then(function(response) {
+            if (!response.ok) {
+              throw new Error('Unable to load item');
+            }
+            return response.text();
+          })
+          .then(function(itemHtml) {
+            var itemPage = new DOMParser().parseFromString(itemHtml, 'text/html');
+            var itemDetails = itemPage.querySelector('center');
+            if (!itemDetails) {
+              throw new Error('Item details cannot be found');
+            }
+            itemTooltip = itemDetails.innerHTML;
+          })
+          .catch(function() {
+            itemTooltip = 'Error - Item Cannot Be Found';
+          })
+          .then(function() {
+            if (itemImage.matches(':hover')) {
+              ddrivetip(itemTooltip, 450);
+            }
+          });
+      }
+    });
+    itemImage.addEventListener('mouseleave', hideddrivetip);
   });
 }, ["marketsearch2.php"]);
 
