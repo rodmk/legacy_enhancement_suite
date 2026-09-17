@@ -497,10 +497,13 @@ registerFunction(function huntingImprovements() {
   }
   function getInventoryFreeSpace(html) {
     // Dev uses slot grids; production still uses legacy inventory tables.
-    var emptySlotSelector = location.hostname === 'dev.legacy-game.net'
-      ? '.item-grid:not(.equipped) .item_slot:not(:has(img))'
-      : '.itemgrid:not(.equipped) td:not(:has(img))';
-    return $(html).find(emptySlotSelector).length;
+    var slotSelector = location.hostname === 'dev.legacy-game.net'
+      ? '.item-grid:not(.equipped) .item_slot'
+      : '.itemgrid:not(.equipped) td';
+    var inventory = new DOMParser().parseFromString(html, 'text/html');
+    return Array.from(inventory.querySelectorAll(slotSelector)).filter(function(slot) {
+      return !slot.querySelector('img');
+    }).length;
   }
   /*****************************************************
                       Hunt Recording Methods
@@ -530,12 +533,17 @@ registerFunction(function huntingImprovements() {
   }
 
   function getHuntOutcome() {
-    var result = $('font:contains("Item Found")');
-    var itemMatch = result.text().match(/Item Found\s*:\s*(.*?)\.\s*$/);
+    var fonts = Array.from(document.querySelectorAll('font'));
+    var itemResult = fonts.find(function(font) {
+      return font.textContent.indexOf('Item Found') !== -1;
+    });
+    var itemMatch = itemResult && itemResult.textContent.match(/Item Found\s*:\s*(.*?)\.(?:\s|$)/);
     if (itemMatch) {
       return itemMatch[1];
     }
-    if ($('font:contains("An item was dropped but your inventory was full, so it was sent to the void.")').length) {
+    if (fonts.some(function(font) {
+      return font.textContent.indexOf('An item was dropped but your inventory was full, so it was sent to the void.') !== -1;
+    })) {
       return 'Void';
     }
     if (document.body.textContent.indexOf('You gained a total of') !== -1) {
@@ -578,12 +586,19 @@ registerFunction(function huntingImprovements() {
       controlsRow.parentNode.insertBefore(inventoryRow, controlsRow.nextSibling);
     }
 
-    $.ajax({
-      url: 'inventory.php',
-      async: true,
-      success: function(data) {
-        $('#invSpace').text(getInventoryFreeSpace(data));
+    var inventorySpace = document.getElementById('invSpace');
+    if (!inventorySpace) {
+      return;
+    }
+    fetch('inventory.php').then(function(response) {
+      if (!response.ok) {
+        throw new Error('Unable to load inventory capacity');
       }
+      return response.text();
+    }).then(function(data) {
+      inventorySpace.textContent = getInventoryFreeSpace(data);
+    }).catch(function(error) {
+      console.error(error);
     });
   }
   /*****************************************************
