@@ -29,7 +29,7 @@
 // @version     0.0.59
 // @grant       none
 // ==/UserScript==
-/* global ddrivetip, hideddrivetip, positiontip, bar1,
+/* global ddrivetip, hideddrivetip, positiontip,
 positionToElement, select, pic */
 
 
@@ -88,34 +88,6 @@ if (document.readyState === 'loading') {
 }
 
 // =============================================================================
-//                              Player Class Helper
-// =============================================================================
-var Player = {
-  getHP: function() {
-    var hp = 0;
-    if (typeof bar1 !== 'undefined') {
-      hp = bar1; // from template.php
-    }
-    return hp;
-  },
-
-  getEnergy: function() {
-    var energy = 0;
-    var turnbox = document.getElementById('turnbox');
-    if (turnbox) {
-      energy = parseInt(turnbox.textContent.replace(/\,/g, ''), 10);
-    }
-    return energy;
-  },
-
-  isInWL: function() {
-    // Check character bg to see if we're in the WL or not.
-    var charBg = document.querySelector('div.char-bg');
-    return charBg !== null && getComputedStyle(charBg).backgroundImage.indexOf('char_bg_waste') > -1;
-  }
-};
-
-// =============================================================================
 //                               General Layout
 // =============================================================================
 /**
@@ -126,7 +98,8 @@ registerFunction(function addQuickHealKeybinding() {
 }, [".*"]);
 
 function fullHeal() {
-  if (Player.isInWL()) {
+  var charBg = document.querySelector('div.char-bg');
+  if (charBg && getComputedStyle(charBg).backgroundImage.indexOf('char_bg_waste') > -1) {
     return;
   }
 
@@ -577,10 +550,8 @@ registerFunction(function huntingImprovements() {
   function hunts(storageKey, initialValue) {
     function Record(data) {
       this.drops = data.drops || {};
-      this.total = data.total || 0;
       this.add = function(drop) {
         this.drops[drop] = this.drops.hasOwnProperty(drop) ? this.drops[drop] + 1 : 1;
-        this.total++;
       };
     }
     this.hunts = initialValue;
