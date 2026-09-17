@@ -29,7 +29,6 @@
 // @version     0.0.59
 // @grant       none
 // @require     https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js
-// @require     https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js
 // ==/UserScript==
 /* global $, jQuery, ddrivetip, hideddrivetip, bar1,
 positionToElement, select, pic */
@@ -948,18 +947,26 @@ registerFunction(function addFlagUpload() {
                       CSS Injection
   /****************************************************/
   var custom = "" +
-    "#uploadPanel{height:auto; width:auto; background: red none; border: 5px solid darkred; padding: 5px; position:absolute; top:20px; left:20px; max-height:90%; max-width:90%; padding-right:20px; overflow:auto;}\n" +
-    "#flagOut{border:1px solid #c3c3c3; display:inline-block;}\n" +
-    "#container{position:relative; display:block; height:30px; width:40px; padding:1px;}\n" +
+    "#uploadPanel{height:auto;width:auto;min-width:190px;background:#171717;color:#ddd;border:1px solid #5b4b2a;padding:8px;position:absolute;top:20px;left:20px;max-height:90%;max-width:90%;overflow:auto;box-shadow:0 3px 12px rgba(0,0,0,.7);z-index:1000;}\n" +
+    "#uploadPanel input[type=button]{padding:3px 7px;border:1px solid #666;background:#333;color:#eee;cursor:pointer;}\n" +
+    "#uploadPanel input[type=button]:hover{background:#444;}\n" +
+    ".les-flag-title{margin:-8px -8px 8px;padding:5px 8px;background:#252525;color:#d6a928;text-align:center;font-weight:bold;}\n" +
+    ".les-flag-preview{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}\n" +
+    "#flagOut{width:80px;height:60px;border:1px solid #666;background:#000;image-rendering:pixelated;}\n" +
+    ".les-flag-options{display:grid;grid-template-columns:1fr auto;align-items:center;gap:5px 10px;margin-bottom:8px;}\n" +
+    ".les-flag-options label{display:contents;}\n" +
+    ".les-flag-actions{display:flex;gap:5px;margin-bottom:8px;}\n" +
+    ".les-flag-actions input{flex:1;}\n" +
+    "#edit{width:100%;margin-bottom:6px;}\n" +
+    "#editPanel{display:none;margin-bottom:6px;text-align:center;}\n" +
+    "#editPanel input+input{margin-left:5px;}\n" +
+    "#container{position:relative;display:block;height:30px;width:40px;padding:1px;border:1px solid #444;background:#0b0b0b;}\n" +
     "#rawImage{position: absolute; display:block; z-index:1;}\n" +
-    "#getArea{position:absolute; height:30px; width:40px; top:1px; left:1px; border:1px solid red;z-index:2;}\n" +
-    "#imageUpload{display:block;}\n" +
-    "#editPanel{display:none;}";
+    "#getArea{position:absolute; height:30px; width:40px; top:1px; left:1px; border:1px solid red;z-index:2;cursor:move;touch-action:none;}\n" +
+    "#getAreaResize{display:none;position:absolute;right:-5px;bottom:-5px;width:9px;height:9px;background:#fff;border:1px solid #900;cursor:nwse-resize;}\n" +
+    ".les-flag-source{display:block;margin-top:8px;color:#aaa;}\n" +
+    "#imageUpload{display:block;max-width:240px;margin-top:3px;color:#ddd;}";
 
-  create('link', {
-    rel: 'stylesheet',
-    href: 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css'
-  }, false, document.head);
   create('style', {
     type: 'text/css'
   }, custom, document.head);
@@ -971,43 +978,55 @@ registerFunction(function addFlagUpload() {
   var panel = create('div', {
     id: 'uploadPanel'
   }, false, document.body);
+  create('div', {
+    class: 'les-flag-title'
+  }, 'Flag Import', panel);
+  var preview = create('div', {
+    class: 'les-flag-preview'
+  }, false, panel);
   create('canvas', {
     id: 'flagOut',
     width: '40',
     height: '30'
-  }, false, panel);
+  }, false, preview);
   create('input', {
     id: 'toFlag',
     type: 'button',
     value: 'Send to Flag'
+  }, false, preview);
+  var options = create('div', {
+    class: 'les-flag-options'
   }, false, panel);
-  create('span', {}, '<br/>Resize Select Box:', panel);
+  var resizeLabel = create('label', {}, 'Resize selection', options);
   create('input', {
     id: 'resizeToggle',
     type: 'checkbox'
-  }, false, panel);
-  create('span', {}, '<br/>Keep Aspect Ratio:', panel);
+  }, false, resizeLabel);
+  var ratioLabel = create('label', {}, 'Keep aspect ratio', options);
   create('input', {
     id: 'Aratio',
     type: 'checkbox',
     checked: 'checked',
     disabled: 'disabled'
+  }, false, ratioLabel);
+  var actions = create('div', {
+    class: 'les-flag-actions'
   }, false, panel);
-  create('span', {}, '<br/>', panel);
   create('input', {
     id: 'reset',
     type: 'button',
-    value: 'Reset to 40X30'
-  }, false, panel);
+    value: 'Reset selection'
+  }, false, actions);
   create('input', {
     id: 'rawImgHide',
     type: 'button',
-    value: 'Show/Hide Canvas'
+    value: 'Show/hide image'
+  }, false, actions);
+  create('input', {
+    id: 'edit',
+    type: 'button',
+    value: 'Editing tools'
   }, false, panel);
-  create('span', {}, '<br/>', panel);
-  create('span', {
-    id: 'edit'
-  }, 'Editing Tools', panel);
   var edit = create('div', {
     id: 'editPanel'
   }, false, panel);
@@ -1029,9 +1048,16 @@ registerFunction(function addFlagUpload() {
     width: '40',
     height: '30'
   }, false, container);
-  create('div', {
+  var area = create('div', {
     id: 'getArea'
   }, false, container);
+  create('span', {
+    id: 'getAreaResize'
+  }, false, area);
+  create('label', {
+    class: 'les-flag-source',
+    for: 'imageUpload'
+  }, 'Source image', panel);
   create('input', {
     id: 'imageUpload',
     type: 'file'
@@ -1050,11 +1076,16 @@ registerFunction(function addFlagUpload() {
     img.src = imgData;
     img.onload = function() {
       var container = document.getElementById('container');
-      container.style.height = img.height + 2 + 'px';
-      container.style.width = img.width + 2 + 'px';
-      rawcanvas.height = img.height + 2;
-      rawcanvas.width = img.width + 2;
-      context.drawImage(img, 1, 1);
+      var maxWidth = Math.max(40, Math.min(640, window.innerWidth - 80));
+      var maxHeight = Math.max(30, Math.min(640, window.innerHeight - 260));
+      var scale = Math.min(1, maxWidth / img.width, maxHeight / img.height);
+      var width = Math.max(1, Math.round(img.width * scale));
+      var height = Math.max(1, Math.round(img.height * scale));
+      container.style.height = height + 2 + 'px';
+      container.style.width = width + 2 + 'px';
+      rawcanvas.height = height + 2;
+      rawcanvas.width = width + 2;
+      context.drawImage(img, 1, 1, width, height);
       area = document.getElementById('getArea');
       area.style.top = '1px';
       area.style.left = '1px';
@@ -1080,13 +1111,84 @@ registerFunction(function addFlagUpload() {
       }
     }
   }
-  //Use jQuery UI to allow the capture div inside the raw canvas to move freely when dragging
-  $(function() {
-    $('#getArea').draggable({
-      containment: 'parent'
-    });
-    window.addEventListener("paste", onPasteHandler);
+  function selectionBounds() {
+    var horizontalBorder = area.offsetWidth - area.clientWidth;
+    var verticalBorder = area.offsetHeight - area.clientHeight;
+    return {
+      maxLeft: container.clientWidth - area.offsetWidth,
+      maxTop: container.clientHeight - area.offsetHeight,
+      maxWidth: container.clientWidth - area.offsetLeft - horizontalBorder,
+      maxHeight: container.clientHeight - area.offsetTop - verticalBorder
+    };
+  }
+
+  function clamp(value, minimum, maximum) {
+    return Math.min(Math.max(value, minimum), maximum);
+  }
+
+  var resizeHandle = document.getElementById('getAreaResize');
+  var pointerAction = null;
+  area.addEventListener('pointerdown', function(event) {
+    if (event.button !== 0) {
+      return;
+    }
+    var resizing = event.target === resizeHandle;
+    pointerAction = {
+      mode: resizing ? 'resize' : 'drag',
+      x: event.clientX,
+      y: event.clientY,
+      left: area.offsetLeft,
+      top: area.offsetTop,
+      width: area.clientWidth,
+      height: area.clientHeight
+    };
+    area.setPointerCapture(event.pointerId);
+    event.preventDefault();
   });
+
+  area.addEventListener('pointermove', function(event) {
+    if (!pointerAction || !area.hasPointerCapture(event.pointerId)) {
+      return;
+    }
+    var dx = event.clientX - pointerAction.x;
+    var dy = event.clientY - pointerAction.y;
+    var bounds = selectionBounds();
+    if (pointerAction.mode === 'drag') {
+      area.style.left = clamp(pointerAction.left + dx, 0, bounds.maxLeft) + 'px';
+      area.style.top = clamp(pointerAction.top + dy, 0, bounds.maxTop) + 'px';
+      return;
+    }
+
+    var width = clamp(pointerAction.width + dx, 5, bounds.maxWidth);
+    var height = clamp(pointerAction.height + dy, 5, bounds.maxHeight);
+    if (document.getElementById('Aratio').checked) {
+      var ratio = pointerAction.width / pointerAction.height;
+      if (Math.abs(dx) >= Math.abs(dy * ratio)) {
+        height = width / ratio;
+      } else {
+        width = height * ratio;
+      }
+      var scale = Math.min(1, bounds.maxWidth / width, bounds.maxHeight / height);
+      width *= scale;
+      height *= scale;
+    }
+    area.style.width = Math.max(5, width) + 'px';
+    area.style.height = Math.max(5, height) + 'px';
+  });
+
+  area.addEventListener('pointerup', function(event) {
+    if (!pointerAction) {
+      return;
+    }
+    pointerAction = null;
+    area.releasePointerCapture(event.pointerId);
+    renderSelection();
+  });
+
+  area.addEventListener('pointercancel', function() {
+    pointerAction = null;
+  });
+  window.addEventListener("paste", onPasteHandler);
   //Show/Hide the Raw Canvas from view
   //Mainly for when the image is larger than the window, or file upload is difficult to see
   $('#rawImgHide').click(function() {
@@ -1098,42 +1200,10 @@ registerFunction(function addFlagUpload() {
     area.style.height = "30px";
     area.style.width = "40px";
   });
-  //Allow the capture div to be resizable (jQuery UI)
   //Aspect ratio can only be enabled/disabled when the capture div is resizable
   $('#resizeToggle').click(function() {
-    if (this.checked) {
-      if ($('#Aratio').is(':checked')) {
-        $('#getArea').resizable({
-          aspectRatio: true,
-          containment: 'parent'
-        });
-      } else {
-        $('#getArea').resizable({
-          containment: 'parent'
-        });
-      }
-      $('#Aratio').prop('disabled', '');
-    } else {
-      $('#getArea').resizable('destroy');
-      $('#Aratio').prop('disabled', 'disabled');
-    }
-  });
-  //Enable/Disable aspect ratio on capture div
-  //Disabling may cause stretching/skewing of output flag
-  $('#Aratio').click(function() {
-    if (this.checked) {
-      $('#getArea').resizable('destroy');
-      $('#getArea').resizable({
-        aspectRatio: true,
-        containment: 'parent'
-      });
-    } else {
-      $('#getArea').resizable('destroy');
-      $('#getArea').resizable({
-        aspectRatio: false,
-        containment: 'parent'
-      });
-    }
+    resizeHandle.style.display = this.checked ? 'block' : 'none';
+    document.getElementById('Aratio').disabled = !this.checked;
   });
   //Image upload from local machine to raw canvas
   $('#imageUpload').change(function() {
@@ -1156,16 +1226,15 @@ registerFunction(function addFlagUpload() {
   });
   //After moving capture div to desired area, send containing image to secondry canvas to preview before sending to legacy page
   //Resize to fit 40X30 pixels where needed using native methods
-  $('#getArea').mouseup(function() {
+  function renderSelection() {
     var rawcanvas = document.getElementById('rawImage'),
       out = document.getElementById('flagOut'),
-      area = document.getElementById('getArea'),
       outctx = out.getContext('2d'),
       x = parseInt(area.style.left, 10),
       y = parseInt(area.style.top, 10);
     outctx.clearRect(0, 0, out.width, out.height);
     outctx.drawImage(rawcanvas, x, y, area.clientWidth, area.clientHeight, 0, 0, out.width, out.height);
-  });
+  }
   //Sent image from preview canvas to legacy page, adjusting page variables and 'pixel' block backgrounds
   $('#toFlag').click(function() {
     var canvas = document.getElementById('flagOut'),
