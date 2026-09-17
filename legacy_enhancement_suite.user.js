@@ -58,7 +58,7 @@ function registerFunction(fn, path_rules) {
     'path_rules cannot be empty'
   );
 
-  $.each(path_rules, function(i, rule) {
+  path_rules.forEach(function(rule) {
     if (rule in function_registry) {
       function_registry[rule].push(fn);
     } else {
@@ -72,13 +72,14 @@ function registerFunction(fn, path_rules) {
  */
 function executeFunctions() {
   var current_path = window.location.pathname;
-  $.each(function_registry, function(rule, fns) {
+  Object.keys(function_registry).forEach(function(rule) {
+    var fns = function_registry[rule];
     if (current_path.match(rule)) {
-      $.each(fns, function() {
+      fns.forEach(function(fn) {
         // Log error messages if an individual function fails, but don't stop
         // execution on exception.
         try {
-          this();
+          fn();
         } catch (e) {
           console.error(e.message);
           console.error(e.stack);
@@ -87,7 +88,11 @@ function executeFunctions() {
     }
   });
 }
-$(document).ready(executeFunctions);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', executeFunctions, { once: true });
+} else {
+  window.setTimeout(executeFunctions, 0);
+}
 
 // =============================================================================
 //                              Player Class Helper
@@ -95,7 +100,7 @@ $(document).ready(executeFunctions);
 var Player = {
   getHP: function() {
     var hp = 0;
-    if (bar1 !== undefined) {
+    if (typeof bar1 !== 'undefined') {
       hp = bar1; // from template.php
     }
     return hp;
@@ -103,20 +108,17 @@ var Player = {
 
   getEnergy: function() {
     var energy = 0;
-    if ($("#turnbox").length) {
-      energy = parseInt($("#turnbox").text().replace(/\,/g, ''));
+    var turnbox = document.getElementById('turnbox');
+    if (turnbox) {
+      energy = parseInt(turnbox.textContent.replace(/\,/g, ''), 10);
     }
     return energy;
   },
 
   isInWL: function() {
     // Check character bg to see if we're in the WL or not.
-    var char_bg = $('div.char-bg');
-    var in_wl = false;
-    if (char_bg.length > 0) {
-      in_wl = char_bg.css('background-image').indexOf('char_bg_waste') > -1;
-    }
-    return in_wl;
+    var charBg = document.querySelector('div.char-bg');
+    return charBg !== null && getComputedStyle(charBg).backgroundImage.indexOf('char_bg_waste') > -1;
   }
 };
 
