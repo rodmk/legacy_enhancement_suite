@@ -71,8 +71,13 @@ function executeFunctions() {
         try {
           fn();
         } catch (e) {
-          console.error(e.message);
-          console.error(e.stack);
+          console.error(
+            '[LES] Failed to initialize ' +
+              (fn.name || 'anonymous feature') +
+              ' on ' +
+              location.href,
+            e,
+          );
         }
       });
     }
