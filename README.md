@@ -1,67 +1,60 @@
 Legacy Enhancement Suite
 ========================
-Simple userscript that provides a variety of tweaks, enhacements, and fixes for [Legacy Game](http://legacy-game.net/).
+A userscript that adds shortcuts, previews, tracking, and other quality-of-life enhancements to [Legacy](https://www.legacy-game.net/).
 
 Installation Instructions
 -------------------------
-### Firefox / Chrome
-1. **Firefox**: Install [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) / **Chrome**: Install [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo).
+### Chrome / Firefox
+1. **Chrome**: Install [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo) / **Firefox**: Install [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/).
 2. [Click here.](https://github.com/rodmk/legacy_enhancement_suite/raw/master/legacy_enhancement_suite.user.js)
 3. Click on 'Install' when prompted.
 
 ### Internet Explorer / Safari / Other
-1. Install [Firefox](https://www.mozilla.org/firefox/) or [Chrome](https://www.google.com/chrome/).
-2. Refer to the Firefox/Chrome installation instructions above.
+1. Install [Chrome](https://www.google.com/chrome/) or [Firefox](https://www.mozilla.org/firefox/).
+2. Refer to the Chrome/Firefox installation instructions above.
 
 Features
 --------
 ### Healing
-- Binds the "H" key on your keyboard to a full heal.
- - As long as you are not in a text box and press "H", you will make a full heal.
+- Adds `H` as a shortcut to perform a full heal outside text fields.
+  - The shortcut is disabled while you are in the Wasteland.
 
-### Player Profile
-- You can now hover over Items in Players' Profiles to view it's details as a tool-tip.
+### Item Previews
+- Shows item details when hovering over items on player profiles, market stands, market setup, market storage, and market search results.
+- Shows recent sales when hovering over a market History link.
 
 ### Market
-- You can now hover over Items searched to view it's details as a tooltip.
- - Has the potential to return wrong data; check before purchasing.
-- In the event you are adding an Item that is already found in your stand, the price field will be automatically filled to fit the existing price.
-- Binds the "A" key on your keyboard to add the selected item to your stand.
-As long as you are not in a text box and press "A", the item will be added to the stand; provided the price field is not invalid.
-- When taking an Item from your stand or storage, your page will scroll back down to the same position; you no longer have to keep scrolling to find the same item.
-
-### Messaging
-- A confirmation box will appear when deleting Private Mails.
-
-### Abilities
-- Fully Trained Abilities no longer show up in the drop-down menu.
+- Reuses an item's price and currency when adding another copy to your stand.
+- Selects the option to add or store all copies of an item by default.
+- Adds `A` as a shortcut to add or store the selected item outside text fields.
+- Restores your position on the page after withdrawing an item from your stand or storage.
 
 ### Top 10 Lists
-- Creates 10 entries for the Top 10 separated by semi-colons for easy copy-pasting.
- - Example: 1;PlayerName;Points
- - This is available for all 6 Top 10 tables & the 2 Top 10 tables for Gangs.
-
-### Jobs
-- Automatically selects the maximum amount of times you can work with your current turns.
+- Adds a button to copy overall, weekly, and gang rankings as CSV.
 
 ### Flags
-- You can now upload Flags.
- - Images are converted automatically.
- - You can choose which part of the image is to be converted to the Flag.
+- Creates flags from uploaded or pasted images.
+- Lets you choose and resize the part of the image to use, with an option to preserve its aspect ratio.
+- Shows a preview before applying the flag.
+- Applies grayscale or inverted-color effects.
 
 ### Hunting
-- Allows the player to Hunt the same Hunting Group on the same page as the final hit that results in victory.
-- Allows the player to combine a Crystal that just dropped with another if found in your Inventory.
-- Shows remaining inventory spaces left after hunting.
-- Tracks drops by hunting groups and shows drops and drop rates in the hunting page.
+- Shows your remaining inventory space after a hunt.
+- Tracks drops and drop rates for normal and special hunts.
+- Adds a button to copy your recorded hunt history as CSV.
 
-### Wastelands
-- Hovering over a Gang Alert now shows a 3x3 grid of the area that was Alerted.
+### Wasteland
+- Shows the surrounding map area when hovering over a gang attack alert in the combat log or gang chat.
 
 ### Combat
-- Attack Buttons are now rendered un-clickable when clicked once. This prevents multiple clicks which may break fights (multi-attack error).
-- Show the combat search results page by default.
-- Automatically fill in the first combat search result in the target box.
+- Automatically fills the target box with the first player combat-search result.
+
+Development
+-----------
+1. Run `npm ci` to install the development tools.
+2. Run `npm run hooks:install` to enable the repository's pre-commit hook.
+
+The pre-commit hook runs `npm run check`, which validates JavaScript syntax, runs ESLint, and checks formatting with Prettier. Run `npm run format` to apply the expected formatting.
 
 Acknowledgements
 ----------------
