@@ -49,6 +49,13 @@ Features
 ### Combat
 - Automatically fills the target box with the first player combat-search result.
 
+Development
+-----------
+1. Run `npm ci` to install the development tools.
+2. Run `npm run hooks:install` to enable the repository's pre-commit hook.
+
+The pre-commit hook runs `npm run check`, which validates JavaScript syntax, runs ESLint, and checks formatting with Prettier. Run `npm run format` to apply the expected formatting.
+
 Acknowledgements
 ----------------
 Many thanks to langer and rollin340 for their various contributions to this project, in the form of suggestions, code contributions, bug testing, and documentation.
