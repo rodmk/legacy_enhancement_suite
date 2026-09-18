@@ -5,7 +5,7 @@ A userscript that adds shortcuts, previews, tracking, and other quality-of-life 
 Installation Instructions
 -------------------------
 ### Chrome / Firefox
-1. **Chrome**: Install [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo) / **Firefox**: Install [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/).
+1. Install Tampermonkey for [Chrome](https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo) or [Firefox](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/).
 2. [Click here.](https://github.com/rodmk/legacy_enhancement_suite/raw/master/legacy_enhancement_suite.user.js)
 3. Click on 'Install' when prompted.
 
