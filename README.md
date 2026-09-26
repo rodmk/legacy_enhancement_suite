@@ -6,7 +6,7 @@ Installation Instructions
 -------------------------
 ### Chrome / Firefox
 1. Install Tampermonkey for [Chrome](https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo) or [Firefox](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/).
-2. [Click here.](https://github.com/rodmk/legacy_enhancement_suite/raw/master/legacy_enhancement_suite.user.js)
+2. [Click here.](https://github.com/rodmk/legacy_enhancement_suite/raw/main/legacy_enhancement_suite.user.js)
 3. Click on 'Install' when prompted.
 
 ### Internet Explorer / Safari / Other
