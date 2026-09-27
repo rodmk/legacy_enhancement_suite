@@ -165,6 +165,180 @@ registerFunction(
   ['profile.php', 'market2.php', 'market3.php', 'market6.php'],
 );
 
+registerFunction(
+  function addProfileBuildCopyButton() {
+    var statsTable = profileStatsTable(document);
+    if (!statsTable) {
+      return;
+    }
+    var copyControl = createCopyControl(function () {
+      return profileBuildJson(document, window.location.href);
+    }, 'Copy build as JSON');
+    copyControl.style.cssFloat = 'right';
+    statsTable.rows[0].cells[0].appendChild(copyControl);
+  },
+  ['profile.php'],
+);
+
+function profileStatsTable(page) {
+  return Array.from(page.querySelectorAll('table')).find(function (table) {
+    return /Character Stats/i.test(table.rows[0] ? table.rows[0].textContent : '');
+  });
+}
+
+function fetchGamePage(url) {
+  return fetch(url)
+    .then(function (response) {
+      if (!response.ok) {
+        throw new Error('Could not load ' + url);
+      }
+      return response.text();
+    })
+    .then(function (html) {
+      return new DOMParser().parseFromString(html, 'text/html');
+    });
+}
+
+function statValue(table, label) {
+  var cell = Array.from(table.querySelectorAll('td')).find(function (candidate) {
+    return candidate.textContent.trim() === label;
+  });
+  return cell && cell.nextElementSibling;
+}
+
+function profileBuildJson(page, profileUrl, inferredStats) {
+  var statsTable = profileStatsTable(page);
+  if (!statsTable) {
+    return Promise.reject(new Error('Character Stats not found'));
+  }
+  var slots = {};
+  Array.from(statsTable.querySelectorAll('a[href*="itemstats.php"]')).forEach(function (link) {
+    var slot = link.parentElement.textContent.match(/\((Armor|Weapon [12]|Misc [12])\)/i);
+    if (slot) {
+      slots[slot[1].toLowerCase().replace(/\s+/g, '')] = link;
+    }
+  });
+  var slotNames = ['armor', 'weapon1', 'weapon2', 'misc1', 'misc2'];
+  if (
+    slotNames.some(function (slot) {
+      return !slots[slot];
+    })
+  ) {
+    return Promise.reject(new Error('Equipment slots not found'));
+  }
+  return Promise.all(
+    slotNames.map(function (slot) {
+      return readProfileItem(slots[slot], slot);
+    }),
+  ).then(function (items) {
+    var name = new URL(profileUrl, window.location.href).searchParams.get('p') || '';
+    var build = profileBuild(statsTable, items, name);
+    if (inferredStats) {
+      build.inferred_total_stats = inferredStats;
+    }
+    var catalog = {};
+    catalog[name] = build;
+    return JSON.stringify(catalog, null, 2);
+  });
+}
+
+var combatItemKeys = {
+  'Concentrated Crystal Bombs T2': 'ConcentratedCBombsT2',
+  'Crystal Bombs T2': 'CBombsT2',
+  'Split Crystal Bombs T2': 'SplitCBombsT2',
+};
+
+function combatCatalogKey(name) {
+  var baseName = name.trim();
+  var modifier =
+    /^(?:Aberrant|Astral|Birthday|Blue|Camo|Christmas|Gold Plated|Gold|Green Neon|Green|Halloween|Neon|Orange|Painted|Pink|Purple Neon|Purple|Red Neon|Red|Silver Plated|Tainted|Yellow)\s+/i;
+  while (modifier.test(baseName)) {
+    baseName = baseName.replace(modifier, '');
+  }
+  return combatItemKeys[baseName] || baseName.replace(/[^A-Za-z0-9]/g, '');
+}
+
+function combatSocketKey(name) {
+  name = name.replace(/^Tainted\s+/i, '');
+  if (
+    /^(?:Perfect (?:Null|Air|Void|Fire|Green|Orange|Yellow|Pink|Water)|(?:Green|Orange|Yellow) Inferno|Corrupted (?:Pink|Water)) Crystal$/.test(
+      name,
+    )
+  ) {
+    name = name.replace(/ Crystal$/, '');
+  }
+  return name.replace(/[^A-Za-z0-9]/g, '');
+}
+
+function readProfileItem(link, slot) {
+  var image = link.querySelector('img');
+  var fallback =
+    link.textContent.trim() ||
+    link.getAttribute('title') ||
+    (image && (image.getAttribute('alt') || image.getAttribute('title'))) ||
+    '';
+  var url = modelessUrl(link.getAttribute('href'));
+  if (!url) {
+    return Promise.reject(new Error('Item preview URL not found'));
+  }
+  return fetchGamePage(url).then(function (page) {
+    var details = page.querySelector('center') || page.body;
+    var socketRows = Array.from(details.querySelectorAll('table table tr'));
+    var sockets = socketRows
+      .map(function (row) {
+        return row.textContent.trim().split(/\s+\(/)[0];
+      })
+      .filter(function (name) {
+        return name && !/Socket Available$/i.test(name);
+      });
+    var item = {
+      item: combatCatalogKey(fallback),
+      crystals: sockets
+        .filter(function (name) {
+          return /Crystal$/i.test(name);
+        })
+        .map(combatSocketKey),
+    };
+    if (/^weapon/.test(slot)) {
+      var mods = sockets
+        .filter(function (name) {
+          return !/Crystal$/i.test(name);
+        })
+        .map(combatSocketKey);
+      if (mods.length) {
+        item.mods = mods;
+      }
+    }
+    return item;
+  });
+}
+
+function profileBuild(statsTable, items, playerName) {
+  var hpCell = statValue(statsTable, 'HP');
+  var hpText = hpCell ? hpCell.getAttribute('onmouseover') || hpCell.textContent : '';
+  var hpMatch = hpText.match(/([\d,]+)\s*\/\s*([\d,]+)/);
+  var hp = hpMatch ? Number(hpMatch[2].replace(/,/g, '')) : null;
+  var levelCell = statValue(statsTable, 'Level');
+  var levelMatch = levelCell && levelCell.textContent.trim().match(/^\d+/);
+  return {
+    name: playerName,
+    level: levelMatch ? Number(levelMatch[0]) : null,
+    stats: {
+      hp: hp !== null && hp % 5 === 0 ? hp / 5 : null,
+      speed: null,
+      accuracy: null,
+      dodge: null,
+    },
+    equipment: {
+      armor: items[0],
+      weapon1: items[1],
+      weapon2: items[2],
+      misc1: items[3],
+      misc2: items[4],
+    },
+  };
+}
+
 // =============================================================================
 //                                  Market
 // =============================================================================
@@ -501,14 +675,22 @@ function createCopyControl(text, title) {
   status.style.color = '#fff';
   var statusTimeout;
   button.addEventListener('click', function () {
-    var copyOperation = navigator.clipboard
-      ? navigator.clipboard.writeText(text)
-      : Promise.reject();
-    copyOperation
+    status.textContent = 'Copying…';
+    Promise.resolve()
+      .then(function () {
+        return typeof text === 'function' ? text() : text;
+      })
+      .then(function (value) {
+        if (!navigator.clipboard) {
+          throw new Error('Clipboard unavailable');
+        }
+        return navigator.clipboard.writeText(value);
+      })
       .then(function () {
         status.textContent = 'Copied to clipboard';
       })
-      .catch(function () {
+      .catch(function (error) {
+        console.error('[LES] Copy failed', error);
         status.textContent = 'Copy failed';
       })
       .finally(function () {
@@ -566,6 +748,187 @@ registerFunction(
   },
   ['fight.php'],
 );
+
+registerFunction(
+  function addCombatStatEstimator() {
+    var opponentTable = Array.from(document.querySelectorAll('table')).find(function (table) {
+      var firstCell = table.rows[0] && table.rows[0].cells[0];
+      return firstCell && firstCell.textContent.trim() === 'Opponent Stats';
+    });
+    if (!opponentTable) {
+      return;
+    }
+    var rounds = Array.from(document.querySelectorAll('td'))
+      .filter(function (cell) {
+        return cell.textContent.trim() === 'Chance of Hit';
+      })
+      .map(function (cell) {
+        return {
+          action: cell.closest('table').rows[0].textContent.trim(),
+          chance: Number.parseInt(cell.nextElementSibling.textContent, 10),
+        };
+      })
+      .filter(function (round) {
+        return Number.isFinite(round.chance);
+      });
+    if (rounds.length !== 2) {
+      return;
+    }
+    var opponentLink = opponentTable.querySelector('a[href*="profile.php?p="]');
+    var opponentName = opponentLink && opponentLink.textContent.trim();
+    var opponentRound = rounds.find(function (round) {
+      return (
+        opponentName &&
+        (round.action.startsWith(opponentName + ' ') || round.action.startsWith(opponentName + "'"))
+      );
+    });
+    var yourRound = opponentRound
+      ? rounds.find(function (round) {
+          return round !== opponentRound;
+        })
+      : rounds.find(function (round) {
+          return /^You(?:r)?\b/i.test(round.action);
+        });
+    if (!yourRound) {
+      return;
+    }
+    opponentRound =
+      opponentRound ||
+      rounds.find(function (round) {
+        return round !== yourRound;
+      });
+    var yourChance = yourRound.chance;
+    var opponentChance = opponentRound.chance;
+
+    var hovercard = 'Reading your Accuracy and Dodge…';
+    var estimatePromise;
+    function getEstimate() {
+      if (!estimatePromise) {
+        estimatePromise = readOwnCombatStats()
+          .then(function (stats) {
+            var opponentDodge = combatStatRangeAcrossModes(stats.accuracy, yourChance, false);
+            var opponentAccuracy = combatStatRangeAcrossModes(stats.dodge, opponentChance, true);
+            hovercard =
+              '<b>Estimated combat stats</b><br>Accuracy: ' +
+              formatCombatRange(opponentAccuracy) +
+              '<br>Dodge: ' +
+              formatCombatRange(opponentDodge) +
+              '<br><small>Ranges cover attack modes and displayed rounding.</small>';
+            return { accuracy: opponentAccuracy, dodge: opponentDodge };
+          })
+          .catch(function (error) {
+            hovercard = 'Could not estimate opponent stats.';
+            estimatePromise = null;
+            throw error;
+          });
+        estimatePromise.then(refreshHovercard, refreshHovercard);
+      }
+      return estimatePromise;
+    }
+    var copyControl = opponentLink
+      ? createCopyControl(function () {
+          return getEstimate().then(function (inferredStats) {
+            return fetchGamePage(opponentLink.href).then(function (page) {
+              return profileBuildJson(page, opponentLink.href, inferredStats);
+            });
+          });
+        }, 'Copy opponent build as JSON')
+      : document.createElement('span');
+    copyControl.style.cssFloat = 'right';
+    var copyButton = opponentLink ? copyControl.querySelector('button') : copyControl;
+    if (!opponentLink) {
+      copyButton.textContent = '📊';
+      copyButton.tabIndex = 0;
+      copyButton.setAttribute('aria-label', 'Estimated opponent stats');
+    }
+    copyButton.removeAttribute('title');
+    copyButton.addEventListener('mouseenter', function (event) {
+      showItemTooltip(hovercard, 220, event);
+      getEstimate();
+    });
+    copyButton.addEventListener('mouseleave', hideItemTooltip);
+    copyButton.addEventListener('focus', function () {
+      showItemTooltip(hovercard, 220);
+      getEstimate();
+    });
+    copyButton.addEventListener('blur', hideItemTooltip);
+    function refreshHovercard() {
+      if (copyButton.matches(':hover') || document.activeElement === copyButton) {
+        showItemTooltip(hovercard, 220);
+      }
+    }
+    opponentTable.rows[0].cells[0].appendChild(copyControl);
+  },
+  ['fight2.php'],
+);
+
+function readOwnCombatStats() {
+  var characterLink = document.querySelector('a[href*="information.php?p=1"]');
+  var url = characterLink ? characterLink.href : 'information.php?p=1';
+  return fetchGamePage(url).then(function (page) {
+    var statsTable = Array.from(page.querySelectorAll('table')).find(function (table) {
+      var firstCell = table.rows[0] && table.rows[0].cells[0];
+      return firstCell && firstCell.textContent.trim() === 'Trainable Stats';
+    });
+    if (!statsTable) {
+      throw new Error('Could not find Trainable Stats');
+    }
+    function readStat(label) {
+      var cell = statValue(statsTable, label);
+      return cell ? Number(cell.textContent.trim().replace(/,/g, '')) : NaN;
+    }
+    var accuracy = readStat('Accuracy');
+    var dodge = readStat('Dodge');
+    if (!Number.isInteger(accuracy) || accuracy < 1 || !Number.isInteger(dodge) || dodge < 1) {
+      throw new Error('Could not parse Accuracy and Dodge');
+    }
+    return { accuracy: accuracy, dodge: dodge };
+  });
+}
+
+function combatHitProbability(offense, defense) {
+  var offenseRange = offense + 1 - offense / 4;
+  var defenseRange = defense + 1 - defense / 4;
+  var combinations = offenseRange * defenseRange;
+  if (defense > offense) {
+    var lowerOverlap = Math.max(0, offense + 1 - defense / 4);
+    return (lowerOverlap * lowerOverlap) / 2 / combinations;
+  }
+  var upperOverlap = Math.max(0, defense + 1 - offense / 4);
+  return 1 - (upperOverlap * upperOverlap) / 2 / combinations;
+}
+
+function combatStatRange(known, displayedChance, inferOffense) {
+  var first;
+  var last;
+  for (var stat = 1; stat <= 5000; stat++) {
+    var chance = inferOffense
+      ? combatHitProbability(stat, known)
+      : combatHitProbability(known, stat);
+    var percent = chance * 100;
+    if (Math.round(percent) === displayedChance || Math.floor(percent) === displayedChance) {
+      first = first || stat;
+      last = stat;
+    }
+  }
+  return first ? [first, last] : null;
+}
+
+function combatStatRangeAcrossModes(normalStat, displayedChance, inferOffense) {
+  var result = null;
+  [0.9, 1, 1.2].forEach(function (factor) {
+    var known = Math.ceil(normalStat * factor - 1e-10);
+    var range = combatStatRange(known, displayedChance, inferOffense);
+    if (range) {
+      result = result ? [Math.min(result[0], range[0]), Math.max(result[1], range[1])] : range;
+    }
+  });
+  return result;
+}
+
+function formatCombatRange(range) {
+  return range ? (range[0] === range[1] ? String(range[0]) : range.join('–')) : 'outside 1–5000';
+}
 
 // =============================================================================
 //                                Hunting

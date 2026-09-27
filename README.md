@@ -49,6 +49,10 @@ Features
 
 ### Combat
 - Automatically fills the target box with the first player combat-search result.
+- Adds a clipboard control to player profiles. It copies a JSON build catalog entry with equipment, socketed crystals, weapon mods, level, and maximum HP from the health bar tooltip.
+- Stats the profile does not reveal are `null`; fill those values and any items outside the simulator catalog before importing the build into [Legacy Combat Simulator](https://github.com/rodmk/legacy_combat_sim).
+- On combat round pages, the clipboard control in Opponent Stats shows estimated combat Accuracy and Dodge ranges on hover and copies the opponent's build with those ranges in `inferred_total_stats`. NPCs without a profile link show the ranges without a copy control.
+- `inferred_total_stats` holds effective combat values across possible attack modes, while the simulator's `stats` fields hold allocated points; resolve the ranges and remove the metadata before loading the JSON as a simulator catalog.
 
 Development
 -----------
