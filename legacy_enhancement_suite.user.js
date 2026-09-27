@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @match       https://www.legacy-game.net/*
 // @match       https://dev.legacy-game.net/*
-// @version     0.0.60
+// @version     0.0.61
 // @grant       none
 // ==/UserScript==
 /* global ddrivetip, hideddrivetip, positiontip,
