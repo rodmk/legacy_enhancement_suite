@@ -213,6 +213,21 @@ registerFunction(
       return;
     }
 
+    function priceForItem(itemName) {
+      var itemFont = Array.from(document.querySelectorAll('font.darktext > font')).find(
+        function (font) {
+          return font.textContent.trim() === itemName;
+        },
+      );
+      var itemRows = itemFont && itemFont.closest('tbody');
+      var priceCell =
+        itemRows &&
+        Array.from(itemRows.querySelectorAll('td')).find(function (cell) {
+          return cell.textContent.indexOf('each') !== -1;
+        });
+      return priceCell && priceCell.textContent.trim().match(/([\d,]+)([cp]) each/);
+    }
+
     function updateStandPricing() {
       var selectedOption = itemSelector.options[itemSelector.selectedIndex];
       var selectedItem = selectedOption ? selectedOption.textContent.trim() : '';
@@ -220,18 +235,7 @@ registerFunction(
         return;
       }
 
-      var itemName = Array.from(document.querySelectorAll('font.darktext > font')).find(
-        function (font) {
-          return font.textContent.trim() === selectedItem;
-        },
-      );
-      var itemRows = itemName && itemName.closest('tbody');
-      var priceCell =
-        itemRows &&
-        Array.from(itemRows.querySelectorAll('td')).find(function (cell) {
-          return cell.textContent.indexOf('each') !== -1;
-        });
-      var match = priceCell && priceCell.textContent.trim().match(/([\d,]+)([cp]) each/);
+      var match = priceForItem(selectedItem);
       var num, currency;
       if (match) {
         num = match[1].replace(/,/g, '');
@@ -245,6 +249,12 @@ registerFunction(
     }
 
     itemSelector.addEventListener('change', updateStandPricing);
+    var pricedIndex = Array.from(itemSelector.options).findIndex(function (option) {
+      return priceForItem(option.textContent.trim());
+    });
+    if (itemSelector.options.length) {
+      itemSelector.selectedIndex = pricedIndex === -1 ? 0 : pricedIndex;
+    }
     updateStandPricing();
   },
   ['market3.php'],
