@@ -24,8 +24,9 @@ Features
 - Shows recent sales when hovering over a market History link.
 
 ### Market
-- Reuses an item's price and currency when adding another copy to your stand.
 - Selects the option to add or store all copies of an item by default.
+- Selects the first item with a saved price when adding items to your stand, or the first item if none have a saved price.
+- Reuses an item's price and currency when adding another copy to your stand.
 - Adds `A` as a shortcut to add or store the selected item outside text fields.
 - Restores your position on the page after withdrawing an item from your stand or storage.
 
