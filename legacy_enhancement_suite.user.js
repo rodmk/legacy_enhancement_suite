@@ -1577,7 +1577,9 @@ registerFunction(
   ['flag.php'],
 );
 
-// BEGIN GENERATED BLACKJACK SOLVER
+// =============================================================================
+//                              Casino Black Jack
+// =============================================================================
 var blackjackSolveHand = (function () {
   const VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   const FULL_DECK = [4, 4, 4, 4, 4, 4, 4, 4, 4, 16];
@@ -1823,11 +1825,6 @@ var blackjackSolveHand = (function () {
 
   return solveBlackjack;
 })();
-// END GENERATED BLACKJACK SOLVER
-
-// =============================================================================
-//                              Casino Black Jack
-// =============================================================================
 registerFunction(
   function showBlackjackAdvice() {
     var table = Array.from(

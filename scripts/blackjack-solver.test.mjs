@@ -1,6 +1,19 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
-import { solveBlackjack } from './blackjack-solver.mjs';
+import { runInNewContext } from 'node:vm';
+
+const source = await readFile(
+  new URL('../legacy_enhancement_suite.user.js', import.meta.url),
+  'utf8',
+);
+const context = {
+  document: { readyState: 'loading', addEventListener() {} },
+  window: {},
+  console,
+};
+runInNewContext(source, context, { filename: 'legacy_enhancement_suite.user.js' });
+const solveBlackjack = context.blackjackSolveHand;
 
 test('Q and 4 against an ace favors a hit and reports complete probabilities', () => {
   const answer = solveBlackjack({ player: ['Q', '4'], dealer: 'A' });

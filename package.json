@@ -2,10 +2,8 @@
   "name": "legacy-enhancement-suite",
   "private": true,
   "scripts": {
-    "check": "npm run check:syntax && npm run check:generated && npm run lint && npm run format:check && npm test",
-    "check:syntax": "node --check legacy_enhancement_suite.user.js && node --check scripts/blackjack-solver.mjs && node --check scripts/blackjack-cli.mjs",
-    "check:generated": "node scripts/build-userscript.mjs --check",
-    "build:userscript": "node scripts/build-userscript.mjs",
+    "check": "npm run check:syntax && npm run lint && npm run format:check && npm test",
+    "check:syntax": "node --check legacy_enhancement_suite.user.js",
     "hooks:install": "git config core.hooksPath .githooks",
     "lint": "eslint legacy_enhancement_suite.user.js scripts/*.mjs eslint.config.mjs",
     "format": "prettier --write legacy_enhancement_suite.user.js scripts/*.mjs eslint.config.mjs package.json .prettierrc.json .github/workflows/checks.yml",
