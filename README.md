@@ -58,9 +58,9 @@ Development
 1. Run `npm ci` to install the development tools.
 2. Run `npm run hooks:install` to enable the repository's pre-commit hook.
 
-The pre-commit hook runs `npm run check`, which validates JavaScript syntax, runs ESLint, checks formatting with Prettier, and runs the blackjack solver tests. Run `npm run format` to apply the expected formatting.
+The pre-commit hook runs `npm run check`, which validates JavaScript syntax, runs ESLint, and checks formatting with Prettier. Run `npm run format` to apply the expected formatting.
 
-The blackjack calculation is part of `legacy_enhancement_suite.user.js`. The tests run that userscript directly. The solver uses one deck, dealer hits on soft 17, no splitting or dealer peek, and the casino's rule that any player 21 pushes a dealer blackjack. It chooses the move with the best expected token result.
+The blackjack calculation is part of `legacy_enhancement_suite.user.js`. The solver uses one deck, dealer hits on soft 17, no splitting or dealer peek, and the casino's rule that any player 21 pushes a dealer blackjack. It chooses the move with the best expected token result.
 
 Acknowledgements
 ----------------

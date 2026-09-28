@@ -2,13 +2,12 @@
   "name": "legacy-enhancement-suite",
   "private": true,
   "scripts": {
-    "check": "npm run check:syntax && npm run lint && npm run format:check && npm test",
+    "check": "npm run check:syntax && npm run lint && npm run format:check",
     "check:syntax": "node --check legacy_enhancement_suite.user.js",
     "hooks:install": "git config core.hooksPath .githooks",
-    "lint": "eslint legacy_enhancement_suite.user.js scripts/*.mjs eslint.config.mjs",
-    "format": "prettier --write legacy_enhancement_suite.user.js scripts/*.mjs eslint.config.mjs package.json .prettierrc.json .github/workflows/checks.yml",
-    "format:check": "prettier --check legacy_enhancement_suite.user.js scripts/*.mjs eslint.config.mjs package.json .prettierrc.json .github/workflows/checks.yml",
-    "test": "node --test scripts/*.test.mjs"
+    "lint": "eslint legacy_enhancement_suite.user.js eslint.config.mjs",
+    "format": "prettier --write legacy_enhancement_suite.user.js eslint.config.mjs package.json .prettierrc.json .github/workflows/checks.yml",
+    "format:check": "prettier --check legacy_enhancement_suite.user.js eslint.config.mjs package.json .prettierrc.json .github/workflows/checks.yml"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

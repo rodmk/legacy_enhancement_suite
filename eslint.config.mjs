@@ -14,10 +14,4 @@ export default [
       'spaced-comment': 'error',
     },
   },
-  {
-    files: ['scripts/*.mjs'],
-    languageOptions: {
-      globals: globals.node,
-    },
-  },
 ];
