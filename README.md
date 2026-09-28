@@ -50,6 +50,10 @@ Features
 ### Combat
 - Automatically fills the target box with the first player combat-search result.
 
+### Casino
+- Shows the recommended move on blackjack hand pages, with win and push chances and expected token results for each available move.
+- Calculates the odds using the casino's one-deck rules, including the dealer hitting on soft 17 and natural blackjack payouts.
+
 Development
 -----------
 1. Run `npm ci` to install the development tools.
