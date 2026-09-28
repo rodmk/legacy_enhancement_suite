@@ -52,6 +52,7 @@ Features
 
 ### Casino
 - Shows the recommended move on Black Jack hand pages, with win and push chances and expected token results for each available move.
+- Calculates the odds using the casino's one-deck rules, including the dealer hitting on soft 17 and natural blackjack payouts.
 
 Development
 -----------
@@ -59,8 +60,6 @@ Development
 2. Run `npm run hooks:install` to enable the repository's pre-commit hook.
 
 The pre-commit hook runs `npm run check`, which validates JavaScript syntax, runs ESLint, and checks formatting with Prettier. Run `npm run format` to apply the expected formatting.
-
-The blackjack calculation is part of `legacy_enhancement_suite.user.js`. The solver uses one deck, dealer hits on soft 17, no splitting or dealer peek, and the casino's rule that any player 21 pushes a dealer blackjack. It chooses the move with the best expected token result.
 
 Acknowledgements
 ----------------
