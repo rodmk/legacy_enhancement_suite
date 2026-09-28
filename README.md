@@ -50,12 +50,23 @@ Features
 ### Combat
 - Automatically fills the target box with the first player combat-search result.
 
+### Casino
+- Shows the recommended move on Black Jack hand pages, with win and push chances and expected token results for each available move.
+
 Development
 -----------
 1. Run `npm ci` to install the development tools.
 2. Run `npm run hooks:install` to enable the repository's pre-commit hook.
 
-The pre-commit hook runs `npm run check`, which validates JavaScript syntax, runs ESLint, and checks formatting with Prettier. Run `npm run format` to apply the expected formatting.
+The pre-commit hook runs `npm run check`, which validates JavaScript syntax, runs ESLint, checks formatting with Prettier, and runs the blackjack solver tests. Run `npm run format` to apply the expected formatting.
+
+The blackjack calculation lives in `scripts/blackjack-solver.mjs`. Run `npm run build:userscript` after changing it to update the embedded copy. The check command verifies that the copies agree. To inspect a hand directly:
+
+```sh
+node scripts/blackjack-cli.mjs '{"player":["Q","4"],"dealer":"A","bet":5}'
+```
+
+The solver uses one deck, dealer hits on soft 17, no splitting or dealer peek, and the casino's rule that any player 21 pushes a dealer blackjack. It chooses the move with the best expected token result. The optional `seen` field lists other exposed cards from the same deck.
 
 Acknowledgements
 ----------------
