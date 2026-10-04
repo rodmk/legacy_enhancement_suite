@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @match       https://www.legacy-game.net/*
 // @match       https://dev.legacy-game.net/*
-// @version     0.0.61
+// @version     0.0.62
 // @grant       none
 // ==/UserScript==
 /* global ddrivetip, hideddrivetip, positiontip,
@@ -225,7 +225,7 @@ registerFunction(
         Array.from(itemRows.querySelectorAll('td')).find(function (cell) {
           return cell.textContent.indexOf('each') !== -1;
         });
-      return priceCell && priceCell.textContent.trim().match(/([\d,]+)([cp]) each/);
+      return priceCell && priceCell.textContent.trim().match(/([\d,]+)([cp])\s+each/);
     }
 
     function updateStandPricing() {
