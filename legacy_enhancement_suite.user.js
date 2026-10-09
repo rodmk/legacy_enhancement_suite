@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @match       https://www.legacy-game.net/*
 // @match       https://dev.legacy-game.net/*
-// @version     0.0.62
+// @version     0.0.63
 // @grant       none
 // ==/UserScript==
 /* global ddrivetip, hideddrivetip, positiontip,
@@ -598,15 +598,12 @@ registerFunction(
       }, {});
     }
     function getInventoryFreeSpace(html) {
-      // Dev uses slot grids; production still uses legacy inventory tables.
-      var slotSelector =
-        location.hostname === 'dev.legacy-game.net'
-          ? '.item-grid:not(.equipped) .item_slot'
-          : '.itemgrid:not(.equipped) td';
       var inventory = new DOMParser().parseFromString(html, 'text/html');
-      return Array.from(inventory.querySelectorAll(slotSelector)).filter(function (slot) {
-        return !slot.querySelector('img');
-      }).length;
+      var inventoryText = inventory.body.textContent;
+      var held = inventoryText.match(/HELD ITEMS\s*\(\s*(\d+)\s*\/\s*(\d+)\s*\)/i);
+      var other = inventoryText.match(/OTHER ITEMS\s*\(\s*(\d+)\s*\/\s*(\d+)\s*\)/i);
+      if (!held || !other) return null;
+      return Number(held[2]) - Number(held[1]) + Number(other[2]) - Number(other[1]);
     }
 
     // -----------------------------------------------------------------------------
@@ -718,7 +715,8 @@ registerFunction(
           return response.text();
         })
         .then(function (data) {
-          inventorySpace.textContent = getInventoryFreeSpace(data);
+          var freeSpace = getInventoryFreeSpace(data);
+          inventorySpace.textContent = freeSpace === null ? '?' : freeSpace;
         })
         .catch(function (error) {
           console.error(error);
