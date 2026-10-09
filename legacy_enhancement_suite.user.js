@@ -602,17 +602,8 @@ registerFunction(
       var inventoryText = inventory.body.textContent;
       var held = inventoryText.match(/HELD ITEMS\s*\(\s*(\d+)\s*\/\s*(\d+)\s*\)/i);
       var other = inventoryText.match(/OTHER ITEMS\s*\(\s*(\d+)\s*\/\s*(\d+)\s*\)/i);
-      if (held && other) {
-        return Number(held[2]) - Number(held[1]) + Number(other[2]) - Number(other[1]);
-      }
-
-      var slots = inventory.querySelectorAll(
-        '.item-grid:not(.equipped) .item_slot, .itemgrid:not(.equipped) td',
-      );
-      if (!slots.length) return null;
-      return Array.from(slots).filter(function (slot) {
-        return !slot.querySelector('img');
-      }).length;
+      if (!held || !other) return null;
+      return Number(held[2]) - Number(held[1]) + Number(other[2]) - Number(other[1]);
     }
 
     // -----------------------------------------------------------------------------
