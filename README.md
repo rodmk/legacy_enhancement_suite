@@ -20,7 +20,7 @@ Features
   - The shortcut is disabled while you are in the Wasteland.
 
 ### Item Previews
-- Shows item details when hovering over items on player profiles, market stands, market setup, market storage, and market search results.
+- Shows item details when hovering over items in market search results.
 - Shows recent sales when hovering over a market History link.
 
 ### Market
