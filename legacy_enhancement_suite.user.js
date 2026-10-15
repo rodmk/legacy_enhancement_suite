@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @match       https://www.legacy-game.net/*
 // @match       https://dev.legacy-game.net/*
-// @version     0.0.63
+// @version     0.0.64
 // @grant       none
 // ==/UserScript==
 /* global ddrivetip, hideddrivetip, positiontip,
@@ -114,56 +114,6 @@ function fullHeal() {
     heal_link.click();
   }
 }
-
-// -----------------------------------------------------------------------------
-// Item Hovercards
-// -----------------------------------------------------------------------------
-
-registerFunction(
-  function addItemHovercards() {
-    document.querySelectorAll('a[href*="javascript:modelesswin"]').forEach(function (link) {
-      var itemTooltip;
-      var itemRequest;
-
-      link.addEventListener('mouseenter', function (event) {
-        if (itemTooltip) {
-          showItemTooltip(itemTooltip, 450, event);
-          return;
-        }
-
-        showItemTooltip('<img src="' + loaderAnim + '" />', 30, event);
-        if (!itemRequest) {
-          var itemUrl = modelessUrl(link.getAttribute('href'));
-          itemRequest = fetch(itemUrl)
-            .then(function (response) {
-              if (!response.ok) {
-                throw new Error('Unable to load item');
-              }
-              return response.text();
-            })
-            .then(function (itemHtml) {
-              var itemPage = new DOMParser().parseFromString(itemHtml, 'text/html');
-              var itemDetails = itemPage.querySelector('center');
-              if (!itemDetails) {
-                throw new Error('Item details cannot be found');
-              }
-              itemTooltip = itemDetails.outerHTML;
-            })
-            .catch(function () {
-              itemTooltip = 'Error - Item Cannot Be Found';
-            })
-            .then(function () {
-              if (link.matches(':hover')) {
-                showItemTooltip(itemTooltip, 450);
-              }
-            });
-        }
-      });
-      link.addEventListener('mouseleave', hideItemTooltip);
-    });
-  },
-  ['profile.php', 'market2.php', 'market3.php', 'market6.php'],
-);
 
 // =============================================================================
 //                                  Market
