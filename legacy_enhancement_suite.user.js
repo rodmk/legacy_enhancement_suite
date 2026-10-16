@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @match       https://www.legacy-game.net/*
 // @match       https://dev.legacy-game.net/*
-// @version     0.0.64
+// @version     0.0.65
 // @grant       none
 // ==/UserScript==
 /* global ddrivetip, hideddrivetip, positiontip,
@@ -515,6 +515,65 @@ registerFunction(
     });
   },
   ['fight.php'],
+);
+
+// =============================================================================
+//                                 Raids
+// =============================================================================
+
+registerFunction(
+  function addRaidOreSellBack() {
+    // Sell prices: https://wiki.legacy-game.net/index.php?title=Ore
+    var orePrices = {
+      'iron ore.png': 10,
+      'copper ore.png': 20,
+      'manganese ore.png': 20,
+      'silver ore.png': 30,
+      'gold ore.png': 40,
+    };
+
+    document.querySelectorAll('#containerdiv table.maintable').forEach(function (table) {
+      if (table.querySelector('.les-ore-sell-back')) return;
+
+      var total = 0;
+      table.querySelectorAll('img.raid-reward-icon').forEach(function (image) {
+        var filename;
+        try {
+          filename = decodeURIComponent(new URL(image.src, document.baseURI).pathname)
+            .split('/')
+            .pop()
+            .toLowerCase();
+        } catch {
+          return;
+        }
+        if (Object.prototype.hasOwnProperty.call(orePrices, filename)) {
+          total += orePrices[filename];
+        }
+      });
+
+      var claimButton = table.querySelector('input[type="submit"][value="Claim!"]');
+      var claimForm = claimButton && claimButton.closest('form');
+      if (!total || !claimForm) return;
+
+      claimForm.style.display = 'grid';
+      claimForm.style.gridTemplateColumns = 'minmax(0, 1fr) auto minmax(0, 1fr)';
+      claimForm.style.alignItems = 'center';
+      claimForm.style.columnGap = '8px';
+      claimButton.style.gridArea = '1 / 2';
+
+      var label = document.createElement('span');
+      label.className = 'les-ore-sell-back darktext';
+      label.style.gridArea = '1 / 3';
+      label.style.justifySelf = 'end';
+      label.style.textAlign = 'right';
+      label.textContent = 'Ore sell-back: ' + total.toLocaleString('en-US') + 'c';
+      label.title =
+        'Sell-back value of iron, copper, manganese, silver and gold ores only. ' +
+        'Excludes other loot and market prices.';
+      claimForm.appendChild(label);
+    });
+  },
+  ['^/raid_rewards\\.php$'],
 );
 
 // =============================================================================
