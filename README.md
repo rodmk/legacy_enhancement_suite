@@ -44,6 +44,10 @@ Features
 - Tracks drops and drop rates for normal and special hunts.
 - Adds a button to copy your recorded hunt history as CSV.
 
+### Raids
+- Shows an ore sell-back total to the right of the Claim button when iron, copper, manganese, silver, or gold ores are present.
+- Excludes other loot and market prices from the total.
+
 ### Wasteland
 - Shows the surrounding map area when hovering over a gang attack alert in the combat log or gang chat.
 
