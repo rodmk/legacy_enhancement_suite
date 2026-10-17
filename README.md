@@ -63,7 +63,7 @@ Development
 1. Run `npm ci` to install the development tools.
 2. Run `npm run hooks:install` to enable the repository's pre-commit hook.
 
-The pre-commit hook runs `npm run check`, which validates JavaScript syntax, runs ESLint, checks formatting with Prettier, and runs regression tests. Run `npm run format` to apply the expected formatting.
+The pre-commit hook runs `npm run check`, which validates JavaScript syntax, runs ESLint, and checks formatting with Prettier. Run `npm run format` to apply the expected formatting.
 
 Acknowledgements
 ----------------
