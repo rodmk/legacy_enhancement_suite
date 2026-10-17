@@ -4,6 +4,12 @@ import globals from 'globals';
 export default [
   js.configs.recommended,
   {
+    files: ['test/*.test.cjs'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+  {
     files: ['legacy_enhancement_suite.user.js'],
     languageOptions: {
       ecmaVersion: 2020,
