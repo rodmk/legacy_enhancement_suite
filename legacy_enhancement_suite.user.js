@@ -143,13 +143,12 @@ registerFunction(
         return;
       }
       requestStarted = true;
-      // A canceled submission or navigation can be retried; elapsed time cannot
-      // establish that a pending forge request failed.
-      Promise.resolve().then(function () {
+      // Wait for later event handlers before checking whether the action was canceled.
+      window.setTimeout(function () {
         if (event.defaultPrevented) {
           requestStarted = false;
         }
-      });
+      }, 0);
     }
 
     if (form) {
