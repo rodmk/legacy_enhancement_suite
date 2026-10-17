@@ -19,6 +19,10 @@ Features
 - Adds `H` as a shortcut to perform a full heal outside text fields.
   - The shortcut is disabled while you are in the Wasteland.
 
+### Shadow Forge
+- Hold `Space` to forge and select Craft Again as each page loads, outside text fields.
+- Prevents duplicate forge submissions and Craft Again requests while the current page is navigating.
+
 ### Item Previews
 - Shows item details when hovering over items in market search results.
 - Shows recent sales when hovering over a market History link.

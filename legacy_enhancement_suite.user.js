@@ -26,7 +26,7 @@
 // @description Improvements to Legacy Game
 // @match       https://www.legacy-game.net/*
 // @match       https://dev.legacy-game.net/*
-// @version     0.0.65
+// @version     0.0.66
 // @grant       none
 // ==/UserScript==
 /* global ddrivetip, hideddrivetip, positiontip,
@@ -114,6 +114,101 @@ function fullHeal() {
     heal_link.click();
   }
 }
+
+// =============================================================================
+//                               Shadow Forge
+// =============================================================================
+
+registerFunction(
+  function addForgeKeybinding() {
+    var forgeButton = document.getElementById('forgeButton');
+    var craftAgain = document.getElementById('craft_again');
+    var control = forgeButton || craftAgain;
+    if (!control) {
+      return;
+    }
+
+    var requestStarted = false;
+    var form = forgeButton && forgeButton.form;
+    var continueLink = craftAgain && craftAgain.closest('a');
+
+    function blockRequest(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+
+    function startRequest(event) {
+      if (requestStarted) {
+        blockRequest(event);
+        return;
+      }
+      requestStarted = true;
+      // Wait for later event handlers before checking whether the action was canceled.
+      window.setTimeout(function () {
+        if (event.defaultPrevented) {
+          requestStarted = false;
+        }
+      }, 0);
+    }
+
+    if (form) {
+      form.addEventListener('submit', startRequest, true);
+    }
+    document.addEventListener(
+      'click',
+      function (event) {
+        if (event.target !== control && !(continueLink && continueLink.contains(event.target))) {
+          return;
+        }
+        if (requestStarted) {
+          blockRequest(event);
+        } else if (continueLink) {
+          startRequest(event);
+        }
+      },
+      true,
+    );
+
+    window.addEventListener(
+      'keydown',
+      function (event) {
+        var target = event.target;
+        if (
+          event.key !== ' ' ||
+          event.defaultPrevented ||
+          event.metaKey ||
+          event.ctrlKey ||
+          event.altKey ||
+          target.isContentEditable ||
+          (target !== control && /^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test(target.tagName))
+        ) {
+          return;
+        }
+        blockRequest(event);
+        if (!requestStarted && !control.disabled) {
+          control.click();
+        }
+      },
+      true,
+    );
+    window.addEventListener(
+      'keyup',
+      function (event) {
+        if (event.key === ' ') {
+          // The game's release handler would otherwise submit a second action.
+          event.stopImmediatePropagation();
+        }
+      },
+      true,
+    );
+    window.addEventListener('pageshow', function (event) {
+      if (event.persisted) {
+        requestStarted = false;
+      }
+    });
+  },
+  ['^/shadow_forge\\.php$'],
+);
 
 // =============================================================================
 //                                  Market
